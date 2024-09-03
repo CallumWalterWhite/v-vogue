@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:12
+    restart: always
+    networks:
+      - default
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=test123
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=vogue
+
+  adminer:
+    image: adminer
+    restart: always
+    networks:
+      - default
+    depends_on:
+      - db
+    environment:
+      - ADMINER_DESIGN=pepa-linha-dark
+
+  backend:
+      build: 
+        context: ./api/.
+      restart: always
+      ports:
+        - "8000:8000"
+      networks:
+        - default
+      depends_on:
+        - db
+      env_file:
+        - .env
+      environment:
+        - POSTGRES_SERVER=db
+        - POSTGRES_PORT=5432
+        - POSTGRES_DB=vogue
+        - POSTGRES_USER=admin
+        - POSTGRES_PASSWORD=test123
+volumes:
+  app-db-data:
+
+networks:
+  traefik-public:
+    external: true
