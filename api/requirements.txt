@@ -8,3 +8,4 @@ APScheduler==3.10.4
 # psycopg==3.2.1
 psycopg2==2.9.9
 psycopg2-binary==2.9.9
+azure-storage-blob==12.22.0

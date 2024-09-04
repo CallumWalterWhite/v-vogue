@@ -7,6 +7,8 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api import api_router
 from app.core.middleware.message_flush import MessageFlushMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
+from app.upgrade import UpgradeManager
+from app.core.deps import get_session 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -25,11 +27,17 @@ def flush_non_sent_messages():
 # Initialize the scheduler
 scheduler = BackgroundScheduler()
 scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
-scheduler.start()
+# scheduler.start()
 
 @app.on_event("shutdown")
 def shutdown_event():
     scheduler.shutdown()
+    
+@app.on_event("startup")
+def startup():
+    session = get_session()
+    upgrade_manager = UpgradeManager(session)
+    upgrade_manager.run_upgrades()
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:

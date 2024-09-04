@@ -13,3 +13,7 @@ class OutboundMessage(MessageBase, table=True):
 
 class InboundMessage(MessageBase, table=True):
     is_success: bool | None = Field(default=None)
+
+class UpgradeManifest(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    script: str | None = Field(default=None, max_length=255)

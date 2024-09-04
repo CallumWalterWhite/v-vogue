@@ -42,7 +42,8 @@ services:
         - POSTGRES_DB=vogue
         - POSTGRES_USER=admin
         - POSTGRES_PASSWORD=test123
-        - ENVIRONMENT=development
+        - ENVIRONMENT=production
+        - STORAGE_TYPE=local
 volumes:
   app-db-data:
 

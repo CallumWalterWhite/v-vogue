@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 import inspect
 import sys
 from app.handlers.message_types import MessageTypes
@@ -7,6 +7,7 @@ class MessageHandler(ABC):
     def __init__(self,handler_name:str):
         self.handler_name = handler_name
 
+    @abstractmethod
     async def handle(self, content:dict):
         pass
     

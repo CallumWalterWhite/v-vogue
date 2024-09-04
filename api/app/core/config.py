@@ -71,6 +71,8 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
     
+    STORAGE_SETTING: Literal["local", "azure"] = "local"
+    
     IS_LOCAL_MESSAGING: bool = True
     INBOX_INTERNAL_REQUEST_URL: str = "http://127.0.0.1:8000/api/v1/message/inbox"
 
