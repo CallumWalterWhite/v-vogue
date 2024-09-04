@@ -27,7 +27,7 @@ def flush_non_sent_messages():
 # Initialize the scheduler
 scheduler = BackgroundScheduler()
 scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
-# scheduler.start()
+scheduler.start()
 
 @app.on_event("shutdown")
 def shutdown_event():

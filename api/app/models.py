@@ -17,3 +17,7 @@ class InboundMessage(MessageBase, table=True):
 class UpgradeManifest(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     script: str | None = Field(default=None, max_length=255)
+    
+class FileUpload(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    filename: str | None = Field(default=None, max_length=255)

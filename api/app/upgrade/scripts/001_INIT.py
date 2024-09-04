@@ -1,11 +1,10 @@
-from sqlmodel import Session
+from sqlmodel import SQLModel, Session
 from app.upgrade import UpgradeBase
-from sqlalchemy import text
+from app.models import OutboundMessage, FileUpload
 
 class INIT_UPGRADE(UpgradeBase):
     def __init__(self, session: Session):
         super().__init__(session)
     
     def upgrade(self, session: Session):
-        print("Creating outboundmessage table...")
-        session.exec(text("CREATE TABLE outboundmessage (id uuid PRIMARY KEY, content text, message_type text, correlation_id text, is_sent boolean)"))
+        SQLModel.metadata.create_all(session.get_bind(), tables=[OutboundMessage.__table__, FileUpload.__table__])
