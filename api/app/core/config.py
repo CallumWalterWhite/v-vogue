@@ -1,6 +1,6 @@
 import secrets
 import warnings
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import (
     AnyUrl,
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     DOMAIN: str = "localhost"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
-
+    
     @computed_field  # type: ignore[prop-decorator]
     @property
     def server_host(self) -> str:
@@ -45,8 +45,25 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
+    
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.ENVIRONMENT == "local":
+            # Use SQLite for local development
+            return "sqlite:///./test.db"
+        else:
+            # Use PostgreSQL for staging/production
+            return MultiHostUrl.build(
+                scheme="postgresql+psycopg2",
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                host=self.POSTGRES_SERVER,
+                port=self.POSTGRES_PORT,
+                path=f"/{self.POSTGRES_DB}",
+            )
 
-    PROJECT_NAME: str
+    PROJECT_NAME: str = "FastAPI app"
     SENTRY_DSN: HttpUrl | None = None
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
@@ -55,5 +72,6 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
     
     IS_LOCAL_MESSAGING: bool = True
+    INBOX_INTERNAL_REQUEST_URL: str = "http://127.0.0.1:8000/api/v1/message/inbox"
 
 settings = Settings()  # type: ignore

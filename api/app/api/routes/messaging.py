@@ -1,11 +1,19 @@
-from app.handlers import InboundMessageSchema, MessageHandlerFactory
-from typing import Annotated
-from fastapi import APIRouter, Depends, File, UploadFile
+from pydantic import BaseModel
+from app.handlers import MessageHandlerFactory
+from app.core.messaging.publisher import SendMessageSchema
+from fastapi import APIRouter
+import json
 
-router = APIRouter()
+class InboundMessageSchema(BaseModel):
+    content: str | None
+    message_type: str
+    correlation_id: str | None = None
 
-@router.post("/inbox/")
+router = APIRouter(prefix="/message")
+
+@router.post("/inbox")
 async def receive_message(message: InboundMessageSchema):
-    # Add message to inbox
-    MessageHandlerFactory(message.HANDLER_NAME).handle(message.CONTENT)
-    return {"status": "Message received", "content": InboundMessageSchema.content}
+    message_handler = MessageHandlerFactory(message.message_type)
+    cotent_dict = json.loads(message.content)
+    await message_handler.handle(cotent_dict)
+    return {"status": "Message received", "content": message.content}
