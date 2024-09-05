@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import inspect
 import sys
 from app.handlers.message_types import MessageTypes
+from app.service.upload_image_service import get_upload_image_service, UploadImageService
 
 class MessageHandler(ABC):
     def __init__(self,handler_name:str):

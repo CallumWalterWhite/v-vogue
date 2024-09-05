@@ -1,4 +1,5 @@
 import json
+import threading
 from app.core.config import settings
 import httpx
 from pydantic import BaseModel
@@ -29,17 +30,20 @@ class Publisher():
         
     def send_message(self, message: SendMessageSchema):
         if settings.IS_LOCAL_MESSAGING:
-            self.__internal_request(message)
+            # Start a new thread to handle the sending operation
+            threading.Thread(target=self.__internal_request, args=(message,)).start()
         else:
             # Implement messaging service
             pass
     
     def __internal_request(self, message: SendMessageSchema):
-        # if message fails (oh well...)
-        #TODO: fire and forget
         with httpx.Client() as client:
             try:
-                client.post(self.internal_request, data=str(message), headers={"Content-Type": "application/json", "Accept": "application/json"})
+                response = client.post(
+                    self.internal_request,
+                    json=message.dict(),
+                    headers={"Content-Type": "application/json", "Accept": "application/json"}
+                )
                 print(f"Message sent: {message}")
             except Exception as e:
                 print(f"Failed to send message: {e}")

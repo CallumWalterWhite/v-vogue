@@ -16,8 +16,17 @@ class InboundMessage(MessageBase, table=True):
 
 class UpgradeManifest(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    script: str | None = Field(default=None, max_length=255)
+    script: str | None = Field(default=None, max_length=255)    
+
+class VogueRequestSession(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    
+class VogueRequestSessionFileUpload(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    vogue_request_session_id: uuid.UUID = Field(foreign_key="vogue_request_session.id")
+    file_upload_id: uuid.UUID = Field(foreign_key="file_upload.id")
     
 class FileUpload(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     filename: str | None = Field(default=None, max_length=255)
+    type: str | None = Field(default=None, max_length=255)

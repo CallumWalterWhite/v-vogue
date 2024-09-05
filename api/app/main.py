@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import time
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -13,11 +14,6 @@ from app.core.deps import get_session
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    generate_unique_id_function=custom_generate_unique_id,
-)
-
 # TODO: create a schedule list of functions to run with schedule time
 def flush_non_sent_messages():
     print(f"Task running at: {time.strftime('%X')}")
@@ -26,19 +22,29 @@ def flush_non_sent_messages():
 
 # Initialize the scheduler
 scheduler = BackgroundScheduler()
-scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
+scheduler.add_job(flush_non_sent_messages, 'interval', seconds=30)
 scheduler.start()
 
-@app.on_event("shutdown")
-def shutdown_event():
-    scheduler.shutdown()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     
-@app.on_event("startup")
-def startup():
     session = get_session()
     upgrade_manager = UpgradeManager(session)
     upgrade_manager.run_upgrades()
+    
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
+    scheduler.start()
+    yield
+    
+    scheduler.shutdown()
 
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    generate_unique_id_function=custom_generate_unique_id,
+    lifespan=lifespan
+)
+    
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
