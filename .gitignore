@@ -163,3 +163,7 @@ cython_debug/
 
 *.db
 local_storage/
+
+*.ckpt
+*.pth
+output/

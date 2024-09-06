@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile, Request
 from app.storage.storage_manager import StorageManager
-from app.service.upload_image_service import get_upload_image_service, UploadImageService
+from app.service.upload_image_service import get_upload_image_service
 
 router = APIRouter()
 

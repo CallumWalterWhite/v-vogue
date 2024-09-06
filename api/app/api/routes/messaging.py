@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.handlers import MessageHandlerFactory
+from app.handlers.handlers import MessageHandlerFactory
 from app.core.messaging.publisher import SendMessageSchema
 from fastapi import APIRouter
 import json

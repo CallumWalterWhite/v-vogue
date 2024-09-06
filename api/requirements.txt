@@ -9,3 +9,21 @@ APScheduler==3.10.4
 psycopg2==2.9.9
 psycopg2-binary==2.9.9
 azure-storage-blob==12.22.0
+
+
+## VIITON 
+# torch==2.2.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+# torchvision==0.18.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+pytorch-lightning==2.4.0
+einops==0.8.0
+opencv-python==4.7.0.72
+omegaconf==2.3.0
+albumentations==1.4.14
+transformers==4.44.2
+# xformers==0.0.22
+open-clip-torch==2.19.0
+diffusers==0.20.2
+clean-fid==0.1.35
+ipython==8.27.0
+numpy==1.26.4
+# scipy
