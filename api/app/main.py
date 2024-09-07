@@ -10,6 +10,14 @@ from app.core.middleware.message_flush import MessageFlushMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.upgrade import UpgradeManager
 from app.core.deps import get_session 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from vitonhd.cldm.cldm import ControlLDM
+from vitonhd.cldm.model import create_model
+from cloth_segmentation.networks import U2NET
+from omegaconf import OmegaConf
+import torch
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -25,6 +33,9 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(flush_non_sent_messages, 'interval', seconds=30)
 scheduler.start()
 
+vititonhd_model = None
+cloth_segmentation_model = None
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     
@@ -35,6 +46,14 @@ async def lifespan(app: FastAPI):
     scheduler = BackgroundScheduler()
     scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
     scheduler.start()
+
+    global model
+    config = OmegaConf.load("path_to_config")
+    model: ControlLDM = create_model(config_path=None, config=config)
+    load_cp = torch.load("path_to_model", map_location="cpu")
+    model.load_state_dict(load_cp["state_dict"])
+    model = model.cuda()
+    model.eval()
     yield
     
     scheduler.shutdown()

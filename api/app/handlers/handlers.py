@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 import inspect
 import sys
+from typing import Annotated
+
+from fastapi import Depends
+from app.storage.storage_manager import StorageManager
 from app.handlers.message_types import MessageTypes
-from app.service.upload_image_service import get_upload_image_service
+
+# find a better injection method
 
 class MessageHandler(ABC):
     def __init__(self,handler_name:str):
@@ -15,6 +20,7 @@ class MessageHandler(ABC):
 class UploadedImageMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.UPLOAD_MESSAGE)
+        self.__storage_manager = StorageManager()
         
     async def handle(self, content:dict):
         print(f"Handling uploaded image: {content}")
