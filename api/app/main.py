@@ -36,6 +36,9 @@ scheduler.start()
 vititonhd_model = None
 cloth_segmentation_model = None
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     
@@ -46,14 +49,26 @@ async def lifespan(app: FastAPI):
     scheduler = BackgroundScheduler()
     scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
     scheduler.start()
+    global vititonhd_model, cloth_segmentation_model
 
-    global model
-    config = OmegaConf.load("path_to_config")
-    model: ControlLDM = create_model(config_path=None, config=config)
-    load_cp = torch.load("path_to_model", map_location="cpu")
-    model.load_state_dict(load_cp["state_dict"])
-    model = model.cuda()
-    model.eval()
+    # Load ControlLDM model
+    config = OmegaConf.load("path_to_config.yaml")
+    vititonhd_model = create_model(config_path=None, config=config)
+    checkpoint1 = torch.load("path_to_model_checkpoint.pth", map_location=device)
+    vititonhd_model.load_state_dict(checkpoint1["state_dict"])
+    vititonhd_model = vititonhd_model.to(device)
+    vititonhd_model.eval()
+
+    # Load U2NET model
+    cloth_segmentation_model = U2NET(in_ch=3, out_ch=4)
+    checkpoint2 = 'trained_checkpoint/checkpoint_u2net.pth'
+    if not os.path.isfile(checkpoint2):
+        raise FileNotFoundError(f"Checkpoint file not found: {checkpoint2}")
+    checkpoint = torch.load(checkpoint2, map_location='cpu')
+    cloth_segmentation_model.load_state_dict(checkpoint.get('state_dict', checkpoint), strict=False)
+    cloth_segmentation_model = cloth_segmentation_model.to(device)
+    cloth_segmentation_model.eval()
+
     yield
     
     scheduler.shutdown()
