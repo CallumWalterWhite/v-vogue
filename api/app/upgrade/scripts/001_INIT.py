@@ -1,10 +1,10 @@
 from sqlmodel import SQLModel, Session
 from app.upgrade import UpgradeBase
-from app.models import OutboundMessage, FileUpload
+from app.models import OutboundMessage, FileUpload, PipelineState
 
 class INIT_UPGRADE(UpgradeBase):
     def __init__(self, session: Session):
         super().__init__(session)
     
     def upgrade(self, session: Session):
-        SQLModel.metadata.create_all(session.get_bind(), tables=[OutboundMessage.__table__, FileUpload.__table__])
+        SQLModel.metadata.create_all(session.get_bind(), tables=[OutboundMessage.__table__, FileUpload.__table__, PipelineState.__table__])

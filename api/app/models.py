@@ -7,7 +7,6 @@ class MessageBase(SQLModel):
     message_type: str | None = Field(default=None, max_length=255)
     correlation_id: str | None = Field(default=None, max_length=255)
 
-
 class OutboundMessage(MessageBase, table=True):
     is_sent: bool | None = Field(default=False)
 
@@ -30,3 +29,10 @@ class FileUpload(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     filename: str | None = Field(default=None, max_length=255)
     type: str | None = Field(default=None, max_length=255)
+    
+class PipelineState(SQLModel, table=True):
+    pipeline_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    state: int | None = Field(default=0)
+    has_completed: bool | None = Field(default=False)
+    has_error: bool | None = Field(default=False)
+    error_message: str | None = Field(default=None, max_length=255)

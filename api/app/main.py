@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 import time
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -28,16 +29,10 @@ def flush_non_sent_messages():
     message_flusher = get_message_flusher()
     message_flusher.send_all_messages()
 
-# Initialize the scheduler
-scheduler = BackgroundScheduler()
-scheduler.add_job(flush_non_sent_messages, 'interval', seconds=30)
-scheduler.start()
-
 vititonhd_model = None
 cloth_segmentation_model = None
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,7 +64,6 @@ async def lifespan(app: FastAPI):
     cloth_segmentation_model.load_state_dict(checkpoint.get('state_dict', checkpoint), strict=False)
     cloth_segmentation_model = cloth_segmentation_model.to(device)
     cloth_segmentation_model.eval()
-    print("Model loaded")
     yield
     
     scheduler.shutdown()
@@ -77,8 +71,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     generate_unique_id_function=custom_generate_unique_id,
-    lifespan=lifespan
+    # lifespan=lifespan #uncomment to enable lifespan
 )
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%H:%M:%S',
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
     
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:

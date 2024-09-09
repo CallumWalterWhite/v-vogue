@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 import inspect
 import sys
-from typing import Annotated
-
-from fastapi import Depends
+from app.core.deps import get_session
+from app.pipeline.model.model_pipeline import ModelPipeline
 from app.storage.storage_manager import StorageManager
 from app.handlers.message_types import MessageTypes
 
@@ -20,10 +19,13 @@ class MessageHandler(ABC):
 class UploadedImageMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.UPLOAD_MESSAGE)
-        self.__storage_manager = StorageManager()
+        self.__model_pipeline = ModelPipeline()
+        
         
     async def handle(self, content:dict):
-        print(f"Handling uploaded image: {content}")
+        pipeline_parameter = {"file_id": content["file_id"], "type": content["type"]}
+        pipeline_id = self.__model_pipeline.create_new_state()
+        await self.__model_pipeline.process_message(pipeline_id, pipeline_parameter)
     
 def MessageHandlerFactory(handler_name: str):
     current_module = sys.modules[__name__]

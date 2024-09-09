@@ -30,10 +30,10 @@ class Publisher():
         
     def send_message(self, message: SendMessageSchema):
         if settings.IS_LOCAL_MESSAGING:
-            # Start a new thread to handle the sending operation
-            threading.Thread(target=self.__internal_request, args=(message,)).start()
+            thread = threading.Thread(target=self.__internal_request, args=(message,))
+            thread.daemon = True
+            thread.start()
         else:
-            # Implement messaging service
             pass
     
     def __internal_request(self, message: SendMessageSchema):
