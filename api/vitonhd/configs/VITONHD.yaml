@@ -1,5 +1,5 @@
 model:
-  target: cldm.cldm.ControlLDM
+  target: vitonhd.cldm.cldm.ControlLDM
   params:
     linear_start: 0.00085
     linear_end: 0.0120
@@ -28,7 +28,7 @@ model:
     mask2_key: "agn_mask"
 
     control_stage_config:
-      target: cldm.warping_cldm_network.NoZeroConvControlNet
+      target: vitonhd.cldm.warping_cldm_network.NoZeroConvControlNet
       params:
         image_size: 32 
         in_channels: 13
@@ -46,7 +46,7 @@ model:
         cond_first_ch: 4
 
     unet_config:
-      target: cldm.warping_cldm_network.StableVITON
+      target: vitonhd.cldm.warping_cldm_network.StableVITON
       params:
         image_size: 32
         in_channels: 13
@@ -64,7 +64,7 @@ model:
         dim_head_denorm: 1
 
     first_stage_config:
-      target: ldm.models.autoencoder.AutoencoderKL
+      target: vitonhd.ldm.models.autoencoder.AutoencoderKL
       params:
         embed_dim: 4
         monitor: val/rec_loss
@@ -91,7 +91,7 @@ model:
       scale: 1.0
 
     cond_stage_config:
-      target: ldm.modules.image_encoders.modules.FrozenCLIPImageEmbedder
+      target: vitonhd.ldm.modules.image_encoders.modules.FrozenCLIPImageEmbedder
 dataset_name: VITONHDSingleDataset
 resume_path: ./ckpts/VITONHD_PBE_pose.ckpt
 default_prompt: ""

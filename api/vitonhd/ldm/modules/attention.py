@@ -7,7 +7,7 @@ from einops import rearrange, repeat
 from typing import Optional, Any
 import os
 
-from ldm.modules.diffusionmodules.util import checkpoint
+from vitonhd.ldm.modules.diffusionmodules.util import checkpoint
 
 try:
     import xformers

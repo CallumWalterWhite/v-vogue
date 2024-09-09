@@ -47,6 +47,6 @@ class FrozenCLIPImageEmbedder(AbstractEncoder):
         return self(image)
 
 if __name__ == "__main__":
-    from ldm.util import count_params
+    from vitonhd.ldm.util import count_params
     model = FrozenCLIPImageEmbedder()
     count_params(model, verbose=True)

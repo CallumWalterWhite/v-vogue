@@ -2,7 +2,7 @@ import os
 import gdown
 import torch
 
-from networks import U2NET
+from cloth_segmentation.networks import U2NET
 from utils.saving_utils import save_checkpoint
 
 os.makedirs("prev_checkpoints", exist_ok=True)

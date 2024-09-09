@@ -15,7 +15,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vitonhd.cldm.cldm import ControlLDM
 from vitonhd.cldm.model import create_model
-from cloth_segmentation.networks import U2NET
+from cloth_segmentation.cloth_segmentation.networks import U2NET
 from omegaconf import OmegaConf
 import torch
 
@@ -52,23 +52,24 @@ async def lifespan(app: FastAPI):
     global vititonhd_model, cloth_segmentation_model
 
     # Load ControlLDM model
-    config = OmegaConf.load("path_to_config.yaml")
+    config = OmegaConf.load("../vitonhd/configs/VITONHD.yaml")
     vititonhd_model = create_model(config_path=None, config=config)
-    checkpoint1 = torch.load("path_to_model_checkpoint.pth", map_location=device)
-    vititonhd_model.load_state_dict(checkpoint1["state_dict"])
-    vititonhd_model = vititonhd_model.to(device)
+    load_cp = torch.load("../vitonhd/VITONHD.ckpt", map_location=device)
+    load_cp = load_cp["state_dict"] if "state_dict" in load_cp.keys() else load_cp
+    vititonhd_model.load_state_dict(load_cp)
+    vititonhd_model = vititonhd_model.cuda()
     vititonhd_model.eval()
 
     # Load U2NET model
     cloth_segmentation_model = U2NET(in_ch=3, out_ch=4)
-    checkpoint2 = 'trained_checkpoint/checkpoint_u2net.pth'
+    checkpoint2 = '../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth'
     if not os.path.isfile(checkpoint2):
         raise FileNotFoundError(f"Checkpoint file not found: {checkpoint2}")
     checkpoint = torch.load(checkpoint2, map_location='cpu')
     cloth_segmentation_model.load_state_dict(checkpoint.get('state_dict', checkpoint), strict=False)
     cloth_segmentation_model = cloth_segmentation_model.to(device)
     cloth_segmentation_model.eval()
-
+    print("Model loaded")
     yield
     
     scheduler.shutdown()

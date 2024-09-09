@@ -8,9 +8,9 @@ import torch.nn.functional as F
 import torchvision.transforms as transforms
 import cv2
 
-from data.base_dataset import Normalize_image
+from cloth_segmentation.data.base_dataset import Normalize_image
 from utils.saving_utils import load_checkpoint_mgpu
-from networks import U2NET
+from cloth_segmentation.networks import U2NET
 
 device = 'cuda'
 

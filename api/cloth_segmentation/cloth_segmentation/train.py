@@ -24,7 +24,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import models
 
-from data.custom_dataset_data_loader import CustomDatasetDataLoader, sample_data
+from cloth_segmentation.data.custom_dataset_data_loader import CustomDatasetDataLoader, sample_data
 
 
 from options.base_options import parser
@@ -33,7 +33,7 @@ from utils.saving_utils import save_checkpoints
 from utils.saving_utils import load_checkpoint, load_checkpoint_mgpu
 from utils.distributed import get_world_size, set_seed, synchronize, cleanup
 
-from networks import U2NET
+from cloth_segmentation.networks import U2NET
 
 
 def options_printing_saving(opt):

@@ -13,10 +13,10 @@ import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 
-from cloth_segmentation.data.base_dataset import Normalize_image
-from cloth_segmentation.utils.saving_utils import load_checkpoint_mgpu
+from cloth_segmentation.cloth_segmentation.data.base_dataset import Normalize_image
+from cloth_segmentation.cloth_segmentation.utils.saving_utils import load_checkpoint_mgpu
 
-from cloth_segmentation.networks import U2NET
+from cloth_segmentation.cloth_segmentation.networks import U2NET
 
 device = os.environ.get("DEVICE", "cuda")
 

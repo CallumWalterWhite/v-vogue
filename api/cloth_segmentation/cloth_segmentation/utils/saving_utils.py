@@ -3,7 +3,7 @@ import copy
 import cv2
 import numpy as np
 from collections import OrderedDict
-from cloth_segmentation import ROOT_DIR
+from cloth_segmentation.cloth_segmentation import ROOT_DIR
 import torch
 
 

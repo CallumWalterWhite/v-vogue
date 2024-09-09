@@ -17,9 +17,9 @@ import torch.nn.functional as F
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 from PIL import Image
-from eval_models import PerceptualLoss
+from vitonhd.eval_models import PerceptualLoss
 
-from ldm.modules.diffusionmodules.util import (
+from vitonhd.ldm.modules.diffusionmodules.util import (
     conv_nd,
     linear,
     zero_module,
@@ -28,10 +28,10 @@ from ldm.modules.diffusionmodules.util import (
 )
 
 from einops import rearrange
-from ldm.modules.attention import SpatialTransformer
-from ldm.modules.diffusionmodules.openaimodel import UNetModel, TimestepEmbedSequential, ResBlock, Downsample, AttentionBlock
-from ldm.util import exists
-from ldm.modules.attention import Normalize, CrossAttention, MemoryEfficientCrossAttention, XFORMERS_IS_AVAILBLE, FeedForward
+from vitonhd.ldm.modules.attention import SpatialTransformer
+from vitonhd.ldm.modules.diffusionmodules.openaimodel import UNetModel, TimestepEmbedSequential, ResBlock, Downsample, AttentionBlock
+from vitonhd.ldm.util import exists
+from vitonhd.ldm.modules.attention import Normalize, CrossAttention, MemoryEfficientCrossAttention, XFORMERS_IS_AVAILBLE, FeedForward
 class CustomBasicTransformerBlock(nn.Module):
     ATTENTION_MODES = {
         "softmax": CrossAttention,  # vanilla attention

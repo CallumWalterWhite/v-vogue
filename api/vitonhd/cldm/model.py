@@ -3,7 +3,7 @@ import torch
 
 from omegaconf import OmegaConf
 import transformers
-from ldm.util import instantiate_from_config
+from vitonhd.ldm.util import instantiate_from_config
 
 
 def get_state_dict(d):

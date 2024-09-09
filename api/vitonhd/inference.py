@@ -4,15 +4,15 @@ from omegaconf import OmegaConf
 from importlib import import_module
 import argparse
 from dataset import VITONHDDataset, VITONHDSingleDataset
-from cldm.cldm import ControlLDM
+from vitonhd.cldm.cldm import ControlLDM
 
 import cv2
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from cldm.plms_hacked import PLMSSampler
-from cldm.model import create_model
+from vitonhd.cldm.plms_hacked import PLMSSampler
+from vitonhd.cldm.model import create_model
 from utils import tensor2img
 
 def build_args():

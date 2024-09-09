@@ -10,12 +10,12 @@ import torch.nn.functional as F
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 
-from utils import tensor2img, resize_mask
+from vitonhd.utils import tensor2img, resize_mask
 from einops import rearrange, repeat
 from torchvision.utils import make_grid
-from ldm.models.diffusion.ddpm import LatentDiffusion
-from ldm.util import log_txt_as_img, instantiate_from_config
-from ldm.models.diffusion.ddim import DDIMSampler
+from vitonhd.ldm.models.diffusion.ddpm import LatentDiffusion
+from vitonhd.ldm.util import log_txt_as_img, instantiate_from_config
+from vitonhd.ldm.models.diffusion.ddim import DDIMSampler
 
 class ControlLDM(LatentDiffusion):
     def __init__(

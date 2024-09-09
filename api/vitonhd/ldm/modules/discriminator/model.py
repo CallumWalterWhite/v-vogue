@@ -2,7 +2,7 @@ import functools
 import torch.nn as nn
 
 
-from ldm.modules.util import ActNorm
+from vitonhd.ldm.modules.util import ActNorm
 
 
 def weights_init(m):
