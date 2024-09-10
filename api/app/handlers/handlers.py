@@ -37,6 +37,20 @@ class ModelPipelineProcessMessageHandler(MessageHandler):
         pipeline_parameter = {"file_id": content["parameters"]["file_id"], "type": content["parameters"]["type"], "correlation_id": correlation_id}
         await self.__model_pipeline.process_message(pipeline_id, pipeline_parameter)
     
+class ModelPipelineCompleteMessageHandler(MessageHandler):
+    def __init__(self):
+        super().__init__(MessageTypes.MODEL_COMPLETE_MESSAGE)
+        
+    async def handle(self, content:dict, correlation_id:str):
+        pass
+    
+class ModelPipelineErrorMessageHandler(MessageHandler):
+    def __init__(self):
+        super().__init__(MessageTypes.MODEL_ERROR_MESSAGE)
+        
+    async def handle(self, content:dict, correlation_id:str):
+        pass
+    
 def MessageHandlerFactory(handler_name: str):
     current_module = sys.modules[__name__]
     for name, obj in inspect.getmembers(current_module, inspect.isclass):

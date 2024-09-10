@@ -89,15 +89,19 @@ class Pipeline(ABC):
             self.__logger.info(f"Processing function {func_pipeline} for pipeline {pipeline_id}")
             try:
                 next_state = await func_pipeline(parameter)
-                self.update_state(pipeline_id, next_state)
+                if next_state == list(graph.keys())[-1]:
+                    self.complete_state(pipeline_id, next_state)
+                else:
+                    self.update_state(pipeline_id, next_state)
             except Exception as e:
                 self.update_state(pipeline_id, -1, str(e))
         self.create_message(pipeline_id)
         
-    def complete_state(self, pipeline_id: str) -> None:
+    def complete_state(self, pipeline_id: str, next_state: int) -> None:
         state_record = self.get_state(pipeline_id)
         if state_record:
             state_record.has_completed = True
+            state_record.state = next_state
             self.__session.add(state_record)
             self.__session.commit()
 

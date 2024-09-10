@@ -1,3 +1,4 @@
+import time
 from sqlmodel import select, Session
 from app.core.messaging.publisher import Publisher, SendMessageSchema
 from app.models import OutboundMessage
@@ -11,7 +12,8 @@ class MessageFlusher(object):
         statement = select(OutboundMessage).where(OutboundMessage.is_sent != True)
         session_outbound_messages = self.__session.exec(statement).all()
         for message in session_outbound_messages:
-            if message.correlation_id == None:
+            # flush empty correlation ids and any messages with a timestamp after 10 seconds
+            if message.correlation_id == None or message.timestamp < (time.time() - 10):
                 send_message_schema = SendMessageSchema(
                     message_type=message.message_type,
                     content=message.content

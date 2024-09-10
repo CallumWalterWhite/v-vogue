@@ -6,7 +6,6 @@ from app.handlers.message_types import MessageTypes
 
 class ModelPipeline(Pipeline):
     def __init__(self):
-        self.__message_type = MessageTypes.MODEL_PIPELINE_MESSAGE
         self.__storage_manager: StorageManager = get_storage_manager()
         super().__init__()
         
@@ -44,10 +43,10 @@ class ModelPipeline(Pipeline):
         return 4
     
     def get_process_message_type(self) -> str:
-        return self.__message_type
+        return MessageTypes.MODEL_PIPELINE_MESSAGE
     
     def get_complete_message_type(self) -> str:
-        return ""
+        return MessageTypes.MODEL_COMPLETE_MESSAGE
     
     def get_failure_message_type(self) -> str:
-        return ""
+        return MessageTypes.MODEL_ERROR_MESSAGE

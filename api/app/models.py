@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -6,6 +7,7 @@ class MessageBase(SQLModel):
     content: str | None = Field(default=None, max_length=255)
     message_type: str | None = Field(default=None, max_length=255)
     correlation_id: str | None = Field(default=None, max_length=255)
+    timestamp: int | None = Field(default=datetime.datetime.now().timestamp())
 
 class OutboundMessage(MessageBase, table=True):
     is_sent: bool | None = Field(default=False)
