@@ -4,7 +4,7 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 class StorageManager(ABC):
     @abstractmethod
-    def get_file(self, file_path: str):
+    def get_file(self, file_path: str) -> bytes:
         pass
 
     @abstractmethod
@@ -26,7 +26,7 @@ class LocalStorageManager(StorageManager):
     def _get_full_path(self, file_path: str) -> str:
         return os.path.join(self.base_directory, file_path)
 
-    def get_file(self, file_path: str):
+    def get_file(self, file_path: str) -> bytes:
         full_path = self._get_full_path(file_path)
         if os.path.exists(full_path):
             with open(full_path, 'rb') as file:

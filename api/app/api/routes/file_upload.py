@@ -1,4 +1,3 @@
-import logging
 from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile, Request
 from app.storage.storage_manager import StorageManager
@@ -8,7 +7,7 @@ router = APIRouter()
 
 @router.post("/uploadfile/person")
 def create_upload_file_person(
-    request: Request,  # Add this to access request state
+    request: Request,
     file: UploadFile,
     upload_image_service: Annotated[StorageManager, Depends(get_upload_image_service)]
 ):
@@ -19,7 +18,7 @@ def create_upload_file_person(
 
 @router.post("/uploadfile/cloth")
 def create_upload_file_cloth(
-    request: Request,  # Add this to access request state
+    request: Request,
     file: UploadFile,
     upload_image_service: Annotated[StorageManager, Depends(get_upload_image_service)]
 ):

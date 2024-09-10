@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from app.handlers.handlers import MessageHandlerFactory
-from app.core.messaging.publisher import SendMessageSchema
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import json
 
 class InboundMessageSchema(BaseModel):
@@ -12,8 +11,12 @@ class InboundMessageSchema(BaseModel):
 router = APIRouter(prefix="/message")
 
 @router.post("/inbox")
-async def receive_message(message: InboundMessageSchema):
+async def receive_message(
+    request: Request,
+    message: InboundMessageSchema
+):
+    correlation_id = getattr(request.state, 'correlation_id', None)
     message_handler = MessageHandlerFactory(message.message_type)
     cotent_dict = json.loads(message.content)
-    await message_handler.handle(cotent_dict)
+    await message_handler.handle(cotent_dict, correlation_id)
     return {"status": "Message received", "content": message.content}

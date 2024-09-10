@@ -13,7 +13,7 @@ class MessageHandler(ABC):
         self.handler_name = handler_name
 
     @abstractmethod
-    async def handle(self, content:dict):
+    async def handle(self, content:dict, correlation_id:str):
         pass
     
 class UploadedImageMessageHandler(MessageHandler):
@@ -22,9 +22,19 @@ class UploadedImageMessageHandler(MessageHandler):
         self.__model_pipeline = ModelPipeline()
         
         
-    async def handle(self, content:dict):
-        pipeline_parameter = {"file_id": content["file_id"], "type": content["type"]}
-        pipeline_id = self.__model_pipeline.create_new_state()
+    async def handle(self, content:dict, correlation_id:str):
+        pipeline_parameter = {"file_id": content["file_id"], "type": content["type"], "correlation_id": correlation_id}
+        pipeline_id = self.__model_pipeline.create_new_state(pipeline_parameter)
+        await self.__model_pipeline.process_message(pipeline_id, pipeline_parameter)
+
+class ModelPipelineProcessMessageHandler(MessageHandler):
+    def __init__(self):
+        super().__init__(MessageTypes.MODEL_PIPELINE_MESSAGE)
+        self.__model_pipeline = ModelPipeline()
+        
+    async def handle(self, content:dict, correlation_id:str):
+        pipeline_id = content["pipeline_id"]
+        pipeline_parameter = {"file_id": content["parameters"]["file_id"], "type": content["parameters"]["type"], "correlation_id": correlation_id}
         await self.__model_pipeline.process_message(pipeline_id, pipeline_parameter)
     
 def MessageHandlerFactory(handler_name: str):

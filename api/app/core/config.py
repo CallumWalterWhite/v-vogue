@@ -1,5 +1,4 @@
 import secrets
-import warnings
 from typing import Annotated, Any, Literal, Optional
 
 from pydantic import (
@@ -12,8 +11,6 @@ from pydantic import (
 )
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing_extensions import Self
-
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -70,6 +67,11 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = ""
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
+
+    LOAD_MODELS: bool = False 
+    VITONHD_MODEL_CONFIG_PATH: str = "../vitonhd/configs/VITONHD.yaml"
+    VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD.ckpt"
+    CLOTH_SEGMENTATION_MODEL_PATH: str = "../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth"
     
     STORAGE_SETTING: Literal["local", "azure"] = "local"
     
