@@ -6,6 +6,10 @@ class StorageManager(ABC):
     @abstractmethod
     def get_file(self, file_path: str) -> bytes:
         pass
+    
+    @abstractmethod
+    def get_file_path(self, file_path: str) -> str:
+        pass
 
     @abstractmethod
     def create_file(self, file_path: str, content: bytes):
@@ -33,6 +37,9 @@ class LocalStorageManager(StorageManager):
                 return file.read()
         else:
             raise FileNotFoundError(f"File {file_path} not found in local storage.")
+        
+    def get_file_path(self, file_path: str) -> str:
+        return self._get_full_path(file_path)
 
     def create_file(self, file_path: str, content: bytes):
         full_path = self._get_full_path(file_path)

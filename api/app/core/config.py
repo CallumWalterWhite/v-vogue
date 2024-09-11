@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         if self.ENVIRONMENT == "local":
             # Use SQLite for local development
-            return "sqlite:///./test.db"
+            return f"sqlite:///./{self.LOCAL_DB}"
         else:
             # Use PostgreSQL for staging/production
             return MultiHostUrl.build(
@@ -67,8 +67,10 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = ""
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
-
-    LOAD_MODELS: bool = False 
+    LOCAL_DB: str = "local.db"
+     
+    LOAD_VITONHD_MODEL: bool = False
+    LOAD_CLOTH_SEGMENTATION_MODEL: bool = True
     VITONHD_MODEL_CONFIG_PATH: str = "../vitonhd/configs/VITONHD.yaml"
     VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD.ckpt"
     CLOTH_SEGMENTATION_MODEL_PATH: str = "../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth"

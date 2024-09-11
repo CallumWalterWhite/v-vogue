@@ -1,32 +1,35 @@
-import json
-from typing import Annotated
-from fastapi import Depends
-from app.handlers.message_types import MessageTypes
-from app.models import FileUploadPipeline
+from sqlmodel import select
+from app.models import FileUploadPipeline, PipelineState
 from app.core.deps import SessionDep
-from app.storage.storage_manager import StorageManager
-from app.storage.deps import get_storage_manager
-from app.service.message_service import MessageService, get_message_service
-from app.service.status_image_service import StatusImageService, get_status_image_service
 import uuid
 
-def get_status_image_service(session:SessionDep, status_service: Annotated[StatusImageService, Depends(get_status_image_service)]):
+def get_status_image_service(session:SessionDep):
     return StatusImageService(session)
 
-class StatusImageService:
-    def __init__(self, session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)]):
-        self.session = session
-        self.storage_manager = storage_manager
-        self.message_service = message_service
+class ImageStautsDto:
+    def __init__(self, file_id: str, has_completed: bool, has_error: bool, error_message: str):
+        self.file_id = file_id
+        self.has_completed = has_completed
+        self.has_error = has_error
+        self.error_message = error_message
+        
+    file_id: str
+    has_completed: bool
+    has_error: bool
+    error_message: str
 
-    def create_image(self, file_path: str, content: bytes, correlation_id:str, image_type: str) -> uuid.UUID:
-        new_image_id = uuid.uuid4()
-        file_extension = file_path.split(".")[-1] #grr i know this is not a good way
-        new_file_name = f"{new_image_id}.{file_extension}"
-        self.storage_manager.create_file(new_file_name, content)
-        file_upload = FileUpload(id=new_image_id, filename=new_file_name, image_type=type)
-        self.session.add(file_upload)
-        file_upload_message = {"file_id": str(new_image_id), "type": image_type}
-        outbound_message = OutboundMessage(content=json.dumps(file_upload_message), message_type=MessageTypes.UPLOAD_MESSAGE, correlation_id=correlation_id)
-        self.message_service.create_message(outbound_message)
-        return new_image_id
+class StatusImageService:
+    def __init__(self, session:SessionDep):
+        self.session = session
+
+    def get_image_status(self, file_id: str) -> ImageStautsDto:
+        image_id = uuid.UUID(file_id)
+        file_upload_pipeline_statement = select(FileUploadPipeline).where(FileUploadPipeline.id == image_id)
+        file_upload_pipeline: FileUploadPipeline = self.session.exec(file_upload_pipeline_statement).one_or_none()
+        if file_upload_pipeline is None:
+            return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="File not found")
+        pipeline_state_statement = select(PipelineState).where(PipelineState.pipeline_id == file_upload_pipeline.pipeline_id)
+        pipeline_state: PipelineState = self.session.exec(pipeline_state_statement).one_or_none()
+        if pipeline_state is None:
+            return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="Pipeline not found")
+        return ImageStautsDto(file_id=file_id, has_completed=pipeline_state.has_completed, has_error=pipeline_state.has_error, error_message=pipeline_state.error_message)

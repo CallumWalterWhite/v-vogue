@@ -23,7 +23,7 @@ class UploadImageService:
         file_extension = file_path.split(".")[-1] #grr i know this is not a good way
         new_file_name = f"{new_image_id}.{file_extension}"
         self.storage_manager.create_file(new_file_name, content)
-        file_upload = FileUpload(id=new_image_id, filename=new_file_name, image_type=type)
+        file_upload = FileUpload(id=new_image_id, filename=str(new_image_id), fullpath=new_file_name, fileextension=file_extension, image_type=type)
         self.session.add(file_upload)
         file_upload_message = {"file_id": str(new_image_id), "type": image_type}
         outbound_message = OutboundMessage(content=json.dumps(file_upload_message), message_type=MessageTypes.UPLOAD_MESSAGE, correlation_id=correlation_id)

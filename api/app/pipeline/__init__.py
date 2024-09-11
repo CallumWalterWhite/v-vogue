@@ -21,8 +21,8 @@ class PipelineMessageFactory():
 
 class Pipeline(ABC):    
     def __init__(self):
-        self.__session: Session = get_session()
-        self.__message_service: MessageService = get_message_service(self.__session)
+        self.session: Session = get_session()
+        self.__message_service: MessageService = get_message_service(self.session)
         self.__logger = logging.getLogger(__name__)
         
     def create_new_state(self, pipeline_parameter: dict) -> str:
@@ -33,15 +33,15 @@ class Pipeline(ABC):
         if len(json_pipeline_parameter) > 255:
             raise ValueError("pipeline_parameter cannot be more than 255 characters")
         pipeline_state = PipelineState(state=0, pipeline_parameters=json_pipeline_parameter)
-        self.__session.add(pipeline_state)
-        self.__session.flush() #TODO: remove flush, move to application generated id
-        self.__session.commit()
+        self.session.add(pipeline_state)
+        self.session.flush() #TODO: remove flush, move to application generated id
+        self.session.commit()
         pipeline_state_id = str(pipeline_state.pipeline_id)
         return pipeline_state_id
     
     def get_state(self, pipeline_id: str) -> PipelineState | None:
         statement = select(PipelineState).where(PipelineState.pipeline_id == uuid.UUID(pipeline_id))
-        pipeline_state: PipelineState = self.__session.exec(statement).one()
+        pipeline_state: PipelineState = self.session.exec(statement).one()
         """Retrieve the current state of the pipeline from the database."""
         if pipeline_state:
             return pipeline_state
@@ -55,8 +55,8 @@ class Pipeline(ABC):
             if error_message:
                 state_record.has_error = True
                 state_record.error_message = error_message
-            self.__session.add(state_record)
-            self.__session.commit()
+            self.session.add(state_record)
+            self.session.commit()
         
         
     @abstractmethod    
@@ -102,8 +102,8 @@ class Pipeline(ABC):
         if state_record:
             state_record.has_completed = True
             state_record.state = next_state
-            self.__session.add(state_record)
-            self.__session.commit()
+            self.session.add(state_record)
+            self.session.commit()
 
     def create_message(self, pipeline_id: str):
         state_record = self.get_state(pipeline_id)

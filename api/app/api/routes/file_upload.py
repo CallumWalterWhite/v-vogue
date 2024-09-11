@@ -1,8 +1,7 @@
 from typing import Annotated
 import uuid
 from fastapi import APIRouter, Depends, UploadFile, Request
-from app.storage.storage_manager import StorageManager
-from app.service.upload_image_service import get_upload_image_service
+from app.service.upload_image_service import get_upload_image_service, UploadImageService
 
 router = APIRouter()
 
@@ -10,7 +9,7 @@ router = APIRouter()
 def create_upload_file_person(
     request: Request,
     file: UploadFile,
-    upload_image_service: Annotated[StorageManager, Depends(get_upload_image_service)]
+    upload_image_service: Annotated[UploadImageService, Depends(get_upload_image_service)]
 ):
     correlation_id = getattr(request.state, 'correlation_id', None)
     
@@ -21,7 +20,7 @@ def create_upload_file_person(
 def create_upload_file_cloth(
     request: Request,
     file: UploadFile,
-    upload_image_service: Annotated[StorageManager, Depends(get_upload_image_service)]
+    upload_image_service: Annotated[UploadImageService, Depends(get_upload_image_service)]
 ):
     correlation_id = getattr(request.state, 'correlation_id', None)
     

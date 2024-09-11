@@ -1,10 +1,15 @@
+import uuid
+from sqlmodel import select
 from app.storage.storage_manager import StorageManager
 from app.storage.deps import get_storage_manager
+from app.models import FileUpload
 from app.pipeline import Pipeline
 import logging
 from app.handlers.message_types import MessageTypes
+from app.inference import get_cloth_segmentation_inference_runtime
 
 class ModelPipeline(Pipeline):
+    AGNOSTIC_FILE_EXTENSION = "png"
     def __init__(self):
         self.__storage_manager: StorageManager = get_storage_manager()
         super().__init__()
@@ -18,27 +23,40 @@ class ModelPipeline(Pipeline):
             4: self.complete_state
         }
         
+    def get_file_upload(self, image_id: str) -> FileUpload:
+        file_upload_statement = select(FileUpload).where(FileUpload.id == uuid.UUID(image_id))
+        file_upload: FileUpload = self.session.exec(file_upload_statement).one_or_none()
+        if file_upload is None:
+            raise Exception("File not found")
+        return file_upload
+        
     async def process_inital_image(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
-        file:bytes = self.__storage_manager.get_file(f"{image_id}.png")
-        logging.getLogger(__name__).info(f"Processing image: {image_id}")
+        file_upload: FileUpload = self.get_file_upload(image_id)
         return 1
     
     async def process_agnostic_mask(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
-        self.__storage_manager.get_file(f"{image_id}.png")
+        file_upload: FileUpload = self.get_file_upload(image_id)
+        file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
+        agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
+        agnostic_file_path = f"{image_id}_agnostic.{self.AGNOSTIC_FILE_EXTENSION}"
+        self.__storage_manager.create_file(agnostic_file_path, agnostic_mask_bytes)
+        #TODO: add agnostic mask 3.2
         logging.getLogger(__name__).info(f"Processing image: {image_id}")
         return 2
     
     async def process_openpose(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
         self.__storage_manager.get_file(f"{image_id}.png")
+        #TODO: run openpose
         logging.getLogger(__name__).info(f"Processing image: {image_id}")
         return 3
     
     async def process_denpose(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
         self.__storage_manager.get_file(f"{image_id}.png")
+        #TODO: run denpose https://github.com/facebookresearch/detectron2
         logging.getLogger(__name__).info(f"Processing image: {image_id}")
         return 4
     

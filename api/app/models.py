@@ -22,6 +22,8 @@ class UpgradeManifest(SQLModel, table=True):
 class FileUpload(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     filename: str | None = Field(default=None, max_length=255)
+    fullpath: str | None = Field(default=None, max_length=255)
+    fileextension: str | None = Field(default=None, max_length=255)
     type: str | None = Field(default=None, max_length=255)
 
 class FileUploadPipeline(SQLModel, table=True):
