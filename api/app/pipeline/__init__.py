@@ -34,7 +34,7 @@ class Pipeline(ABC):
             raise ValueError("pipeline_parameter cannot be more than 255 characters")
         pipeline_state = PipelineState(state=0, pipeline_parameters=json_pipeline_parameter)
         self.__session.add(pipeline_state)
-        self.__session.flush()
+        self.__session.flush() #TODO: remove flush, move to application generated id
         self.__session.commit()
         pipeline_state_id = str(pipeline_state.pipeline_id)
         return pipeline_state_id

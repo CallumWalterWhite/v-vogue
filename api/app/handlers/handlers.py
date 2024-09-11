@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 import inspect
 import sys
-from app.core.deps import get_session
 from app.pipeline.model.model_pipeline import ModelPipeline
-from app.storage.storage_manager import StorageManager
 from app.handlers.message_types import MessageTypes
+from app.core.deps import get_session
+from app.models import FileUploadPipeline
 
 # find a better injection method
 
@@ -20,11 +20,14 @@ class UploadedImageMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.UPLOAD_MESSAGE)
         self.__model_pipeline = ModelPipeline()
+        self.__session = get_session()
         
         
     async def handle(self, content:dict, correlation_id:str):
         pipeline_parameter = {"file_id": content["file_id"], "type": content["type"], "correlation_id": correlation_id}
-        pipeline_id = self.__model_pipeline.create_new_state(pipeline_parameter)
+        pipeline_id: str = self.__model_pipeline.create_new_state(pipeline_parameter)
+        self.__session.add(FileUploadPipeline(pipeline_id=pipeline_id, file_id=content["file_id"]))
+        self.__session.commit()
         await self.__model_pipeline.process_message(pipeline_id, pipeline_parameter)
 
 class ModelPipelineProcessMessageHandler(MessageHandler):

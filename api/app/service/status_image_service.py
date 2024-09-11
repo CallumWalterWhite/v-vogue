@@ -2,18 +2,19 @@ import json
 from typing import Annotated
 from fastapi import Depends
 from app.handlers.message_types import MessageTypes
-from app.models import OutboundMessage, FileUpload
+from app.models import FileUploadPipeline
 from app.core.deps import SessionDep
 from app.storage.storage_manager import StorageManager
 from app.storage.deps import get_storage_manager
 from app.service.message_service import MessageService, get_message_service
+from app.service.status_image_service import StatusImageService, get_status_image_service
 import uuid
 
-def get_upload_image_service(session:SessionDep, storage_manager: Annotated[StorageManager, Depends(get_storage_manager)], message_service: Annotated[MessageService, Depends(get_message_service)]):
-    return UploadImageService(session, storage_manager, message_service)
+def get_status_image_service(session:SessionDep, status_service: Annotated[StatusImageService, Depends(get_status_image_service)]):
+    return StatusImageService(session)
 
-class UploadImageService:
-    def __init__(self, session:SessionDep, storage_manager: Annotated[StorageManager, Depends(get_storage_manager)], message_service: Annotated[MessageService, Depends(get_message_service)]):
+class StatusImageService:
+    def __init__(self, session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)]):
         self.session = session
         self.storage_manager = storage_manager
         self.message_service = message_service
