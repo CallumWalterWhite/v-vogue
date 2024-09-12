@@ -53,10 +53,11 @@ def infer(net, device, image_path) -> bytes:
 
     # Convert back to PIL Image for saving or displaying
     output_image = image_tensor_np.transpose(1, 2, 0)  # [H, W, 3]
-    output_img = Image.fromarray(output_image)
+    output_img: Image = Image.fromarray(output_image)
     output_img = output_img.resize(img_size, Image.BICUBIC)
 
     img_byte_arr = io.BytesIO()
+    output_img.save(img_byte_arr, format='PNG')
     return img_byte_arr.getvalue()
 
     # output_img.save(new_image_path) #might need to revert to this
