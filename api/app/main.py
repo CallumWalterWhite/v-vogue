@@ -38,6 +38,7 @@ async def lifespan(app: FastAPI):
     scheduler.start()
     global vititonhd_model, device
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    #TODO: just rewrite this... it's just bad lol
     import torch
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if settings.LOAD_VITONHD_MODEL:
@@ -55,8 +56,11 @@ async def lifespan(app: FastAPI):
         vititonhd_model.eval()
     if settings.LOAD_CLOTH_SEGMENTATION_MODEL:
         # Load U2NET model
-        from app.inference import setup
-        setup()
+        from app.inference import setup_cloth_seg
+        setup_cloth_seg()
+    if settings.LOAD_OPEN_POSE_MODEL:
+        
+    
     yield
     
     scheduler.shutdown()
