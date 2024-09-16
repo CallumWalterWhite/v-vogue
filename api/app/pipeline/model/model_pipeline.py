@@ -117,9 +117,13 @@ class ModelPipeline(Pipeline):
         file_upload: FileUpload = self.get_file_upload(image_id)
         file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
         model_denpose = get_densepose_runtime()
-        denpose = model_denpose.infer(file_path)
-        print(denpose)
-        raise Exception(type(denpose))
+        densepose_file_path = f"{image_id}_densepose.{self.AGNOSTIC_FILE_EXTENSION}"
+        denpose: Image = model_denpose.infer(file_path)
+        img_byte_arr = io.BytesIO()
+        denpose.save(img_byte_arr, format='PNG')
+        img_byte_arr = img_byte_arr.getvalue()
+        self.__storage_manager.create_file(densepose_file_path, img_byte_arr)
+        self.__logger.info(f"Processing image: {image_id}")
         return 4
     
     def get_process_message_type(self) -> str:
