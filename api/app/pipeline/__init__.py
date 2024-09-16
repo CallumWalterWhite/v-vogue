@@ -7,6 +7,7 @@ from sqlmodel import select, Session
 from app.service.message_service import MessageService, get_message_service
 import uuid
 import json
+import traceback
 
 class PipelineMessageFactory():
     @staticmethod
@@ -94,7 +95,9 @@ class Pipeline(ABC):
                 else:
                     self.update_state(pipeline_id, next_state)
             except Exception as e:
-                self.update_state(pipeline_id, -1, str(e))
+                tb = traceback.format_exc()
+                self.__logger.error(f"Error processing pipeline {pipeline_id}: {tb}")
+                self.update_state(pipeline_id, -1, str(tb))
         self.create_message(pipeline_id)
         
     def complete_state(self, pipeline_id: str, next_state: int) -> None:

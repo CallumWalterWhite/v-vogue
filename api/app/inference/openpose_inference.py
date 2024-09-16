@@ -23,7 +23,7 @@ class OpenPoseInference():
     
     def infer(self, file_path: str, resolution=384) -> OpenPoseKeypoins:
         input_image = np.asarray(Image.open(file_path))
-        input_image = input_image.resize((self.IMG_W, self.IMG_H))
+        # input_image = input_image.resize((self.IMG_W, self.IMG_H))
         with torch.no_grad():
             input_image = HWC3(input_image)
             input_image = resize_image(input_image, resolution)

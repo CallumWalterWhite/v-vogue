@@ -13,6 +13,7 @@ from app.upgrade import UpgradeManager
 from app.core.deps import get_session 
 import sys
 import os
+from logging.handlers import RotatingFileHandler
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -74,14 +75,22 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan #uncomment to enable lifespan
 )
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%H:%M:%S',
+
+log_dir = 'log'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+log_file = os.path.join(log_dir, 'app.log')
+log_formatter = logging.Formatter(
+    '%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
 )
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-    
+file_handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5)
+file_handler.setFormatter(log_formatter)
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[file_handler]
+)
+
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
