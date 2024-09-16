@@ -10,17 +10,25 @@ class OpenPoseKeypoins:
         self.pose_keypoints_2d = pose_keypoints_2d
     pose_keypoints_2d: list = []
 
+    def __json__(self):
+        return {
+            'pose_keypoints_2d': self.pose_keypoints_2d
+        }
+
 class OpenPoseInference():
+    IMG_H = 1024
+    IMG_W = 768
     def __init__(self):
         self.preprocessor = OpenposeDetector()
     
     def infer(self, file_path: str, resolution=384) -> OpenPoseKeypoins:
         input_image = np.asarray(Image.open(file_path))
+        input_image = input_image.resize((self.IMG_W, self.IMG_H))
         with torch.no_grad():
             input_image = HWC3(input_image)
             input_image = resize_image(input_image, resolution)
             H, W, C = input_image.shape
-            assert (H == 512 and W == 384), 'Incorrect input image shape'
+            # assert (H == 512 and W == 384), f'Incorrect input image shape {H}x{W}'
             pose, detected_map = self.preprocessor(input_image, hand_and_face=False)
 
             candidate = pose['bodies']['candidate']

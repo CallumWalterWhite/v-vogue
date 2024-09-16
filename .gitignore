@@ -166,4 +166,5 @@ local_storage/
 
 *.ckpt
 *.pth
+*.onnx
 output/

@@ -61,7 +61,10 @@ async def lifespan(app: FastAPI):
     if settings.LOAD_OPEN_POSE_MODEL:
         from app.inference import setup_open_pose
         setup_open_pose()
-    
+    if settings.LOAD_HUMAN_PARSING_MODEL:
+        from app.inference import setup_human_parsing
+        setup_human_parsing()
+
     yield
     
     scheduler.shutdown()
@@ -92,4 +95,5 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.add_middleware(MessageFlushMiddleware)
+##TODO: add sqlmodel flusher middleware (flushes all sqlmodel sessions)
 app.include_router(api_router, prefix=settings.API_V1_STR)

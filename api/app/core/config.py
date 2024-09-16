@@ -72,6 +72,7 @@ class Settings(BaseSettings):
     LOAD_VITONHD_MODEL: bool = False
     LOAD_CLOTH_SEGMENTATION_MODEL: bool = True
     LOAD_OPEN_POSE_MODEL: bool = True
+    LOAD_HUMAN_PARSING_MODEL: bool = True
     VITONHD_MODEL_CONFIG_PATH: str = "../vitonhd/configs/VITONHD.yaml"
     VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD.ckpt"
     CLOTH_SEGMENTATION_MODEL_PATH: str = "../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth"

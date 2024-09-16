@@ -2,6 +2,8 @@ import datetime
 import uuid
 from sqlmodel import Field, Relationship, SQLModel
 
+#TODO: add all foreign keys...... bad on me
+
 class MessageBase(SQLModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     content: str | None = Field(default=None, max_length=255)
@@ -25,6 +27,18 @@ class FileUpload(SQLModel, table=True):
     fullpath: str | None = Field(default=None, max_length=255)
     fileextension: str | None = Field(default=None, max_length=255)
     type: str | None = Field(default=None, max_length=255)
+
+class FileUploadMetadata(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    file_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    width: int | None = Field(default=None)
+    height: int | None = Field(default=None)
+    size: int | None = Field(default=None)
+
+class ModelImageMetadata(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    file_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    keypoints: str | None = Field(default=None) #TODO: should be a json field
 
 class FileUploadPipeline(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
