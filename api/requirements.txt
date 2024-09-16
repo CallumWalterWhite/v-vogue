@@ -27,3 +27,4 @@ clean-fid==0.1.35
 ipython==8.27.0
 numpy==1.26.4
 # scipy
+matplotlib==3.9.1

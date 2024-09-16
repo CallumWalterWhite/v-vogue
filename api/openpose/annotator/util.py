@@ -5,7 +5,7 @@ import cv2
 import os
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).absolute().parents[3].absolute()
+PROJECT_ROOT = Path(__file__).absolute().parents[2].absolute()
 # print(annotator_ckpts_path)
 
 def HWC3(x):

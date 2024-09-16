@@ -59,7 +59,8 @@ async def lifespan(app: FastAPI):
         from app.inference import setup_cloth_seg
         setup_cloth_seg()
     if settings.LOAD_OPEN_POSE_MODEL:
-        
+        from app.inference import setup_open_pose
+        setup_open_pose()
     
     yield
     

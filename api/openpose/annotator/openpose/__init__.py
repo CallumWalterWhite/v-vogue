@@ -7,7 +7,7 @@ from . import util
 from .body import Body
 from .hand import Hand
 from .face import Face
-from annotator.util import PROJECT_ROOT
+from openpose.annotator.util import PROJECT_ROOT
 
 
 def draw_pose(pose, H, W, draw_body=True, draw_hand=True, draw_face=True):
@@ -32,7 +32,8 @@ def draw_pose(pose, H, W, draw_body=True, draw_hand=True, draw_face=True):
 
 class OpenposeDetector:
     def __init__(self):
-        body_modelpath = os.path.join(PROJECT_ROOT, "body_pose_model.pth")
+        body_modelpath = os.path.join(PROJECT_ROOT, "openpose/body_pose_model.pth")
+        print(body_modelpath)
         # hand_modelpath = os.path.join(annotator_ckpts_path, "hand_pose_model.pth")
         # face_modelpath = os.path.join(annotator_ckpts_path, "facenet.pth")
 

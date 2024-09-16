@@ -6,12 +6,13 @@ from app.models import FileUpload
 from app.pipeline import Pipeline
 import logging
 from app.handlers.message_types import MessageTypes
-from app.inference import get_cloth_segmentation_inference_runtime
+from app.inference import get_cloth_segmentation_inference_runtime, get_openpose_runtime
 
 class ModelPipeline(Pipeline):
     AGNOSTIC_FILE_EXTENSION = "png"
     def __init__(self):
         self.__storage_manager: StorageManager = get_storage_manager()
+        self.__logger = logging.getLogger(__name__)
         super().__init__()
         
     def process_graph(self):
@@ -43,21 +44,24 @@ class ModelPipeline(Pipeline):
         agnostic_file_path = f"{image_id}_agnostic.{self.AGNOSTIC_FILE_EXTENSION}"
         self.__storage_manager.create_file(agnostic_file_path, agnostic_mask_bytes)
         #TODO: add agnostic mask 3.2
-        logging.getLogger(__name__).info(f"Processing image: {image_id}")
+        self.__logger.info(f"Processing image: {image_id}")
         return 2
     
     async def process_openpose(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
-        self.__storage_manager.get_file(f"{image_id}.png")
-        #TODO: run openpose
-        logging.getLogger(__name__).info(f"Processing image: {image_id}")
+        file_upload: FileUpload = self.get_file_upload(image_id)
+        file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
+        openpose_runtime = get_openpose_runtime()
+        keypoints = openpose_runtime.infer(file_path)
+        self.__logger.info(f"Keypoints: {keypoints}")
+        self.__logger.info(f"Processing image: {image_id}")
         return 3
     
     async def process_denpose(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
         self.__storage_manager.get_file(f"{image_id}.png")
         #TODO: run denpose https://github.com/facebookresearch/detectron2
-        logging.getLogger(__name__).info(f"Processing image: {image_id}")
+        self.__logger.info(f"Processing image: {image_id}")
         return 4
     
     def get_process_message_type(self) -> str:
