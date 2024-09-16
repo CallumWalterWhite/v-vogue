@@ -4,13 +4,18 @@ import torch
 from app.inference.cloth_segmentation_inference import ClothSegmentationInference
 from app.inference.openpose_inference import OpenPoseInference
 from app.inference.hunmanparsing_inference import HumanParsingInference
+from app.inference.densepose_inference import DensePoseInference
 
 cloth_segmentation_inference_runtime: ClothSegmentationInference = None
 openpose_runtime: OpenPoseInference = None
 humanparsing_runtime: HumanParsingInference = None
 
+def __check_os_path():
+    if os.path.dirname(os.path.dirname(os.path.abspath(__file__))) not in sys.path:
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 def setup_cloth_seg():
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    __check_os_path()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     global cloth_segmentation_inference_runtime
     cloth_segmentation_inference_runtime = ClothSegmentationInference(device)
@@ -18,16 +23,23 @@ def setup_cloth_seg():
     #TODO: add vitonHD inference
     
 def setup_open_pose():
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    __check_os_path()
     global openpose_runtime
     openpose_runtime = OpenPoseInference()
 
 def setup_human_parsing():
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    __check_os_path()
     global humanparsing_runtime
     humanparsing_runtime = HumanParsingInference()
+
+def setup_densepose():
+    __check_os_path()
+    global densepose_runtime
+    densepose_runtime = DensePoseInference()
     
-    
+def get_densepose_runtime():
+    return densepose_runtime
+
 def get_cloth_segmentation_inference_runtime():
     return cloth_segmentation_inference_runtime
 

@@ -51,4 +51,5 @@ class PipelineState(SQLModel, table=True):
     has_completed: bool | None = Field(default=False)
     has_error: bool | None = Field(default=False)
     error_message: str | None = Field(default=None)
+    stack_trace: str | None = Field(default=None)
     pipeline_parameters: str | None = Field(default=None, max_length=255)

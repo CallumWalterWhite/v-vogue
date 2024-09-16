@@ -29,3 +29,7 @@ numpy==1.26.4
 # scipy
 matplotlib==3.9.1
 onnxruntime==1.19.2
+fvcore==0.1.5
+cloudpickle==3.0.0
+pycocotools==2.0.8
+av==13.0.0

@@ -65,6 +65,9 @@ async def lifespan(app: FastAPI):
     if settings.LOAD_HUMAN_PARSING_MODEL:
         from app.inference import setup_human_parsing
         setup_human_parsing()
+    if settings.LOAD_DENPOSE_MODEL:
+        from app.inference import setup_densepose
+        setup_densepose()
 
     yield
     

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
-from typing import Awaitable
+from typing import Awaitable, Union
 from app.models import OutboundMessage, PipelineState
 from app.core.deps import get_session
 from sqlmodel import select, Session
@@ -48,14 +48,15 @@ class Pipeline(ABC):
             return pipeline_state
         return None
 
-    def update_state(self, pipeline_id: str, new_state: int, error_message: str | None = None) -> None:
+    def update_state(self, pipeline_id: str, new_state: int, error: Union[str, str] | None = None) -> None:
         """Update the pipeline state in the database."""
         state_record = self.get_state(pipeline_id)
         if state_record:
             state_record.state = new_state
-            if error_message:
+            if error:
                 state_record.has_error = True
-                state_record.error_message = error_message
+                state_record.error_message = error[0]
+                state_record.stack_trace = error[1]
             self.session.add(state_record)
             self.session.commit()
         
@@ -97,7 +98,7 @@ class Pipeline(ABC):
             except Exception as e:
                 tb = traceback.format_exc()
                 self.__logger.error(f"Error processing pipeline {pipeline_id}: {tb}")
-                self.update_state(pipeline_id, -1, str(tb))
+                self.update_state(pipeline_id, -1, (str(e), tb))
         self.create_message(pipeline_id)
         
     def complete_state(self, pipeline_id: str, next_state: int) -> None:

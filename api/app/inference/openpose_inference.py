@@ -20,15 +20,17 @@ class OpenPoseInference():
     IMG_W = 768
     def __init__(self):
         self.preprocessor = OpenposeDetector()
+        self.preprocessor.body_estimation.model.to('cuda' if torch.cuda.is_available() else 'cpu')
     
     def infer(self, file_path: str, resolution=384) -> OpenPoseKeypoins:
-        input_image = np.asarray(Image.open(file_path))
-        # input_image = input_image.resize((self.IMG_W, self.IMG_H))
+        input_image = Image.open(file_path)
+        input_image = input_image.resize((self.IMG_W, self.IMG_H))  # Resize as a PIL image
+        input_image = np.asarray(input_image)  # Convert to numpy array after resizing
         with torch.no_grad():
             input_image = HWC3(input_image)
             input_image = resize_image(input_image, resolution)
             H, W, C = input_image.shape
-            # assert (H == 512 and W == 384), f'Incorrect input image shape {H}x{W}'
+            # assert (H == 512 and W == 384), f'Incorrect input image shape {H}x{W}' #TODO: This bad boy really only works with 512x384 images... smh, its because of get_mask_location in utils_stableviton.py
             pose, detected_map = self.preprocessor(input_image, hand_and_face=False)
 
             candidate = pose['bodies']['candidate']
