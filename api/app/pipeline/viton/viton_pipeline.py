@@ -64,8 +64,8 @@ class VitonHDPipeline(Pipeline):
     def get_viton_image(self, id: str) -> VitonUploadImage:
         return self.__viton_image_service.get_viton_image(uuid.UUID(id))
     
-    def get_preprocessed_image(self, image_id: str, type: str) -> FileUploadPreProcess:
-        return self.__upload_image_service.get_preprocessed_image(uuid.UUID(image_id), type)
+    def get_preprocessed_image(self, image_id: uuid.UUID, type: str) -> FileUploadPreProcess:
+        return self.__upload_image_service.get_preprocessed_image(image_id, type)
         
     async def process_inital_image(self, parameter: dict) -> int:
         id: str = parameter["viton_image_id"]
