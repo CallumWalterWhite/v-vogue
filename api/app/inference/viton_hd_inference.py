@@ -8,21 +8,24 @@ from omegaconf import OmegaConf
 from PIL import Image
 import numpy as np
 import torch
+from app.core.config import settings
 
 class VitonHDInference():
     IMG_H = 1024
     IMG_W = 768
-    def __init__(self):
+    def __init__(self, device):
         ##TODO: move url to settings
-        config = OmegaConf.load("./configs/VITON.yaml")
+        config = OmegaConf.load(settings.VITONHD_MODEL_CONFIG_PATH)
         config.model.params.img_H = self.IMG_H
         config.model.params.img_W = self.IMG_W
         self.params = config.model.params
-        model = create_model(config_path=None, config=config)
-        model.load_state_dict(torch.load("./checkpoints/VITONHD_1024.ckpt", map_location="cpu")["state_dict"])
-        self.model = model.cuda()
-        model.eval()
-        self.sampler = PLMSSampler(model)
+        self.model = create_model(config_path=None, config=config)
+        load_cp = torch.load(settings.VITONHD_MODEL_PATH, map_location=device)
+        load_cp = load_cp["state_dict"] if "state_dict" in load_cp.keys() else load_cp
+        self.model.load_state_dict(load_cp)
+        self.model = self.model.cuda()
+        self.model.eval()
+        self.sampler = PLMSSampler(self.model)
 
     def infer(self, batch, n_steps) -> bytes:
         z, cond = self.model.get_input(batch, self.params.first_stage_key)

@@ -8,7 +8,7 @@ class MessageBase(SQLModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     content: str | None = Field(default=None, max_length=255)
     message_type: str | None = Field(default=None, max_length=255)
-    correlation_id: str | None = Field(default=None, max_length=255)
+    correlation_id: uuid.UUID | None = Field(default=None)
     timestamp: int | None = Field(default=datetime.datetime.now().timestamp())
 
 class OutboundMessage(MessageBase, table=True):

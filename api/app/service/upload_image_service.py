@@ -26,7 +26,7 @@ class UploadImageService:
             raise Exception("File not found")
         return file_upload
 
-    def create_image(self, file_path: str, content: bytes, correlation_id:str, image_type: str) -> uuid.UUID:
+    def create_image(self, file_path: str, content: bytes, correlation_id:uuid.UUID, image_type: str) -> uuid.UUID:
         new_image_id = uuid.uuid4()
         file_extension = file_path.split(".")[-1] #grr i know this is not a good way
         new_file_name = f"{new_image_id}.{file_extension}"
@@ -51,7 +51,7 @@ class UploadImageService:
         return self.__get_file_upload(image_id)
     
     def get_preprocessed_image(self, image_id: uuid.UUID, type: str) -> FileUploadPreProcess:
-        file_upload_statement = select(FileUploadPreProcess).where(FileUploadPreProcess.orginal_file_upload_id == image_id and FileUploadPreProcess.type == type)
+        file_upload_statement = select(FileUploadPreProcess).where(FileUploadPreProcess.orginal_file_upload_id == image_id).where(FileUploadPreProcess.type == type)
         file_upload: FileUploadPreProcess = self.session.exec(file_upload_statement).one_or_none()
         if file_upload is None:
             raise Exception("File not found")

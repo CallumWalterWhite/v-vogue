@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
         # vititonhd_model = vititonhd_model.cuda()
         # vititonhd_model.eval()
         from app.inference import setup_vitonHD
-        setup_vitonHD()
+        setup_vitonHD(device)
     if settings.LOAD_CLOTH_SEGMENTATION_MODEL == True:
         # Load U2NET model
         from app.inference import setup_cloth_seg

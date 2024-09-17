@@ -31,7 +31,7 @@ class MessageHandler(ABC):
         self.handler_name = handler_name
 
     @abstractmethod
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
     
 class UploadedImageMessageHandler(MessageHandler):
@@ -40,9 +40,9 @@ class UploadedImageMessageHandler(MessageHandler):
         self.__session = get_session()
         
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pipeline = PipelineFactory.create_pipeline(content["type"])
-        pipeline_parameter = {"file_id": content["file_id"], "type": content["type"], "correlation_id": correlation_id}
+        pipeline_parameter = {"file_id": content["file_id"], "type": content["type"], "correlation_id": str(correlation_id)}
         pipeline_id: str = pipeline.create_new_state(pipeline_parameter)
         self.__session.add(FileUploadPipeline(pipeline_id=uuid.UUID(pipeline_id), file_upload_id=uuid.UUID(content["file_id"])))
         self.__session.commit()
@@ -53,23 +53,23 @@ class ModelPipelineProcessMessageHandler(MessageHandler):
         super().__init__(MessageTypes.MODEL_PIPELINE_MESSAGE)
         self.__model_pipeline = ModelPipeline()
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pipeline_id = content["pipeline_id"]
-        pipeline_parameter = {"file_id": content["parameters"]["file_id"], "type": content["parameters"]["type"], "correlation_id": correlation_id}
+        pipeline_parameter = {"file_id": content["parameters"]["file_id"], "type": content["parameters"]["type"], "correlation_id": str(correlation_id)}
         await self.__model_pipeline.process_message(pipeline_id, pipeline_parameter)
     
 class ModelPipelineCompleteMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.MODEL_COMPLETE_MESSAGE)
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
     
 class ModelPipelineErrorMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.MODEL_ERROR_MESSAGE)
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
 
 class ClothPipelineProcessMessageHandler(MessageHandler):
@@ -77,23 +77,23 @@ class ClothPipelineProcessMessageHandler(MessageHandler):
         super().__init__(MessageTypes.CLOTH_PIPELINE_MESSAGE)
         self.__cloth_pipeline = ClothPipeline()
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pipeline_id = content["pipeline_id"]
-        pipeline_parameter = {"file_id": content["parameters"]["file_id"], "type": content["parameters"]["type"], "correlation_id": correlation_id}
+        pipeline_parameter = {"file_id": content["parameters"]["file_id"], "type": content["parameters"]["type"], "correlation_id": str(correlation_id)}
         await self.__cloth_pipeline.process_message(pipeline_id, pipeline_parameter)
     
 class ClothPipelineCompleteMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.CLOTH_COMPLETE_MESSAGE)
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
     
 class ClothPipelineErrorMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.CLOTH_ERROR_MESSAGE)
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
     
 
@@ -103,9 +103,9 @@ class VitonSubmitMessageHandler(MessageHandler):
         self.__session = get_session()
         
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pipeline = PipelineFactory.create_viton_pipeline()
-        pipeline_parameter = {"viton_image_id": content["viton_image_id"], "correlation_id": correlation_id}
+        pipeline_parameter = {"viton_image_id": content["viton_image_id"], "correlation_id": str(correlation_id)}
         pipeline_id: str = pipeline.create_new_state(pipeline_parameter)
         self.__session.add(FileUploadPipeline(pipeline_id=uuid.UUID(pipeline_id), file_upload_id=uuid.UUID(content["viton_image_id"])))
         self.__session.commit()
@@ -116,23 +116,23 @@ class VitonPipelineProcessMessageHandler(MessageHandler):
         super().__init__(MessageTypes.VITON_PIPELINE_MESSAGE)
         self.__viton_pipeline = PipelineFactory.create_viton_pipeline()
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pipeline_id = content["pipeline_id"]
-        pipeline_parameter = {"viton_image_id": content["parameters"]["viton_image_id"], "correlation_id": correlation_id}
+        pipeline_parameter = {"viton_image_id": content["parameters"]["viton_image_id"], "correlation_id": str(correlation_id)}
         await self.__viton_pipeline.process_message(pipeline_id, pipeline_parameter)
     
 class VitonPipelineCompleteMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.VITON_COMPLETE_MESSAGE)
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
     
 class VitonPipelineErrorMessageHandler(MessageHandler):
     def __init__(self):
         super().__init__(MessageTypes.VITON_ERROR_MESSAGE)
         
-    async def handle(self, content:dict, correlation_id:str):
+    async def handle(self, content:dict, correlation_id:uuid.UUID):
         pass
     
 

@@ -7,7 +7,7 @@ import uuid
 
 class MessageFlushMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        correlation_id = str(uuid.uuid4())
+        correlation_id = uuid.uuid4()
         request.state.correlation_id = correlation_id
         response = await call_next(request)
         message_flusher: MessageFlusher = get_message_flusher()

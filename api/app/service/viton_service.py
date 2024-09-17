@@ -23,9 +23,9 @@ class VitonImageService:
             raise Exception("Viton Image not found")
         return viton_image
 
-    def create_viton_image(self, model_upload_id: uuid.UUID, cloth_upload_id: uuid.UUID, correlation_id:str, category:str = "upper_body") -> VitonUploadImage:
+    def create_viton_image(self, model_upload_id: uuid.UUID, cloth_upload_id: uuid.UUID, correlation_id:uuid.UUID, category:str = "upper_body") -> VitonUploadImage:
         viton_image_id = uuid.uuid4()
-        viton_image = VitonUploadImage(id=viton_image_id,model_upload_id=model_upload_id, cloth_upload_id=cloth_upload_id, is_completed=False)
+        viton_image = VitonUploadImage(id=viton_image_id,model_upload_id=model_upload_id, cloth_upload_id=cloth_upload_id, catergory=category, is_completed=False)
         file_upload_message = {"viton_image_id": str(viton_image_id)}
         outbound_message = OutboundMessage(content=json.dumps(file_upload_message), message_type=MessageTypes.VITON_SUBMIT_MESSAGE, correlation_id=correlation_id)
         self.message_service.create_message(outbound_message)

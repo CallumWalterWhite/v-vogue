@@ -14,11 +14,12 @@ class PipelineMessageFactory():
     def create_message(pipeline_state: PipelineState, process_message_type:str, complete_message_type:str, failure_message_type:str) -> OutboundMessage:
         pipeline_parameter = json.loads(pipeline_state.pipeline_parameters)
         message = {"pipeline_id": str(pipeline_state.pipeline_id), "state": pipeline_state.state, "has_error": pipeline_state.has_error, "parameters": pipeline_parameter}
+        correlation_id = uuid.UUID(pipeline_parameter["correlation_id"])
         if pipeline_state.has_error:
-            return OutboundMessage(content=json.dumps(message), message_type=failure_message_type, correlation_id=pipeline_parameter["correlation_id"])
+            return OutboundMessage(content=json.dumps(message), message_type=failure_message_type, correlation_id=correlation_id)
         if pipeline_state.has_completed:
-            return OutboundMessage(content=json.dumps(message), message_type=complete_message_type, correlation_id=pipeline_parameter["correlation_id"])
-        return OutboundMessage(content=json.dumps(message), message_type=process_message_type, correlation_id=pipeline_parameter["correlation_id"])
+            return OutboundMessage(content=json.dumps(message), message_type=complete_message_type, correlation_id=correlation_id)
+        return OutboundMessage(content=json.dumps(message), message_type=process_message_type, correlation_id=correlation_id)
 
 class Pipeline(ABC):    
     def __init__(self):

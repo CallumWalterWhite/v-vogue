@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
     LOCAL_DB: str = "local.db"
      
-    LOAD_VITONHD_MODEL: bool = False
+    LOAD_VITONHD_MODEL: bool = True
     LOAD_CLOTH_SEGMENTATION_MODEL: bool = True
     LOAD_OPEN_POSE_MODEL: bool = True
     LOAD_HUMAN_PARSING_MODEL: bool = True

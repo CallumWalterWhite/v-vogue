@@ -38,10 +38,10 @@ def setup_densepose():
     global densepose_runtime
     densepose_runtime = DensePoseInference()
 
-def setup_vitonHD():
+def setup_vitonHD(device):
     __check_os_path()
     global vitonHD_runtime
-    vitonHD_runtime = VitonHDInference()
+    vitonHD_runtime = VitonHDInference(device)
     
 def get_densepose_runtime():
     if densepose_runtime:
