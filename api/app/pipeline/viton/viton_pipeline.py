@@ -44,8 +44,8 @@ class VitonHDPipeline(Pipeline):
             1: self.complete_state
         }
         
-    def get_file_upload(self, image_id: str) -> FileUpload:
-        return self.__upload_image_service.get_uploaded_image(uuid.UUID(image_id))
+    def get_file_upload(self, image_id: uuid.UUID) -> FileUpload:
+        return self.__upload_image_service.get_uploaded_image(image_id)
     
     def get_file_upload_metadata(self, file_upload_id: uuid.UUID) -> FileUploadMetadata:
         file_upload_metadata_statement = select(FileUploadMetadata).where(FileUploadMetadata.file_upload_id == file_upload_id)
@@ -73,7 +73,7 @@ class VitonHDPipeline(Pipeline):
         model_file_upload_id: FileUpload = self.get_file_upload(viton_image.model_upload_id)
         cloth_file_upload_id: FileUpload = self.get_file_upload(viton_image.cloth_upload_id)
 
-        model_image_metadata: ModelImageMetadata = self.get_model_image_metadata(model_file_upload_id.id)
+        model_image_metadata: ModelImageMetadata = self.get_model_image_metadata(viton_image.model_upload_id)
         
         resized_model_image = self.get_preprocessed_image(model_file_upload_id.id, self.PREPROCESSED_RESIZED)
         resized_cloth_image = self.get_preprocessed_image(cloth_file_upload_id.id, self.PREPROCESSED_RESIZED)
