@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, SQLModel
 
 #TODO: add all foreign keys...... bad on me
 
@@ -28,6 +28,13 @@ class FileUpload(SQLModel, table=True):
     fileextension: str | None = Field(default=None, max_length=255)
     type: str | None = Field(default=None, max_length=255)
 
+class FileUploadPreProcess(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    orginal_file_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    fullpath: str | None = Field(default=None, max_length=255)
+    fileextension: str | None = Field(default=None, max_length=255)
+    type: str | None = Field(default=None, max_length=255)
+
 class FileUploadMetadata(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     file_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
@@ -39,6 +46,14 @@ class ModelImageMetadata(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     file_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
     keypoints: str | None = Field(default=None) #TODO: should be a json field
+
+class VitonUploadImage(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    model_upload_id: uuid.UUID = Field()
+    cloth_upload_id: uuid.UUID = Field()
+    catergory: str | None = Field(default=None, max_length=255)
+    is_completed: bool | None = Field(default=False)
+    path: str | None = Field(default=None, max_length=255)
 
 class FileUploadPipeline(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

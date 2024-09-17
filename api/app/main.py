@@ -43,29 +43,31 @@ async def lifespan(app: FastAPI):
     import torch
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if settings.LOAD_VITONHD_MODEL:
-        # Improve performance by importing the models only when needed
-        from vitonhd.cldm.model import create_model
-        from cloth_segmentation.cloth_segmentation.networks import U2NET
-        from omegaconf import OmegaConf
-        # Load ControlLDM model
-        config = OmegaConf.load(settings.VITONHD_MODEL_CONFIG_PATH)
-        vititonhd_model = create_model(config_path=None, config=config)
-        load_cp = torch.load(settings.VITONHD_MODEL_PATH, map_location=device)
-        load_cp = load_cp["state_dict"] if "state_dict" in load_cp.keys() else load_cp
-        vititonhd_model.load_state_dict(load_cp)
-        vititonhd_model = vititonhd_model.cuda()
-        vititonhd_model.eval()
-    if settings.LOAD_CLOTH_SEGMENTATION_MODEL:
+        # # Improve performance by importing the models only when needed
+        # from vitonhd.cldm.model import create_model
+        # from cloth_segmentation.cloth_segmentation.networks import U2NET
+        # from omegaconf import OmegaConf
+        # # Load ControlLDM model
+        # config = OmegaConf.load(settings.VITONHD_MODEL_CONFIG_PATH)
+        # vititonhd_model = create_model(config_path=None, config=config)
+        # load_cp = torch.load(settings.VITONHD_MODEL_PATH, map_location=device)
+        # load_cp = load_cp["state_dict"] if "state_dict" in load_cp.keys() else load_cp
+        # vititonhd_model.load_state_dict(load_cp)
+        # vititonhd_model = vititonhd_model.cuda()
+        # vititonhd_model.eval()
+        from app.inference import setup_vitonHD
+        setup_vitonHD()
+    if settings.LOAD_CLOTH_SEGMENTATION_MODEL == True:
         # Load U2NET model
         from app.inference import setup_cloth_seg
         setup_cloth_seg()
-    if settings.LOAD_OPEN_POSE_MODEL:
+    if settings.LOAD_OPEN_POSE_MODEL == True:
         from app.inference import setup_open_pose
         setup_open_pose()
-    if settings.LOAD_HUMAN_PARSING_MODEL:
+    if settings.LOAD_HUMAN_PARSING_MODEL == True:
         from app.inference import setup_human_parsing
         setup_human_parsing()
-    if settings.LOAD_DENPOSE_MODEL:
+    if settings.LOAD_DENPOSE_MODEL == True:
         from app.inference import setup_densepose
         setup_densepose()
 
@@ -91,7 +93,7 @@ file_handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=
 file_handler.setFormatter(log_formatter)
 logging.basicConfig(
     level=logging.INFO,
-    handlers=[file_handler]
+    # handlers=[file_handler]
 )
 
 # Set all CORS enabled origins

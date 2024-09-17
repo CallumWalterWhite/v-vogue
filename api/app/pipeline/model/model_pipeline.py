@@ -3,12 +3,13 @@ import os
 from sqlmodel import select
 from app.storage.storage_manager import StorageManager
 from app.storage.deps import get_storage_manager
-from app.models import FileUpload, FileUploadMetadata, ModelImageMetadata
+from app.models import FileUpload, FileUploadMetadata, ModelImageMetadata,FileUploadPreProcess
 from app.pipeline import Pipeline
 import logging
 from app.handlers.message_types import MessageTypes
+from app.service.upload_image_service import get_upload_image_service
 from app.inference import get_cloth_segmentation_inference_runtime, get_openpose_runtime, get_humanparsing_runtime, get_densepose_runtime
-from utils_stableviton import get_mask_location, get_batch, tensor2img, center_crop
+from utils_stableviton import get_mask_location, center_crop
 from app.inference.openpose_inference import OpenPoseKeypoins
 from enum import Enum
 from PIL import Image
@@ -25,29 +26,30 @@ class ModelPipelineProcess(Enum):
 class ModelPipeline(Pipeline):
     #TODO: parse all 3 categories to get the mask and create matrix for the mask with the garment, DEFAULT is upper_body
     category_dict_utils = ['upper_body', 'lower_body', 'dresses']
-    AGNOSTIC_FILE_EXTENSION = "png"
+    PREPROCESS_FILE_EXTENSION = "png"
+    PREPROCESSED_RESIZED = "resized"
+    PREPROCESSED_AGNOSTIC = "agnostic"
+    PREPROCESSED_AGNOSTIC_V2 = "agnostic_v2"
+    PREPROCESSED_DENSEPOSE = "densepose"
     IMG_H = 1024 #defalt height
     IMG_W = 768 #default width
     def __init__(self):
+        super().__init__()
         self.__storage_manager: StorageManager = get_storage_manager()
         self.__logger = logging.getLogger(__name__)
-        super().__init__()
+        self.__upload_image_service = get_upload_image_service(self.session, self.__storage_manager, None) #message service is not needed.. need to refactor this
         
     def process_graph(self):
         return {
             0: self.process_inital_image,
             1: self.process_openpose,
             2: self.process_agnostic_mask,
-            3: self.process_denpose,
+            3: self.process_densepose,
             4: self.complete_state
         }
         
     def get_file_upload(self, image_id: str) -> FileUpload:
-        file_upload_statement = select(FileUpload).where(FileUpload.id == uuid.UUID(image_id))
-        file_upload: FileUpload = self.session.exec(file_upload_statement).one_or_none()
-        if file_upload is None:
-            raise Exception("File not found")
-        return file_upload
+        return self.__upload_image_service.get_uploaded_image(uuid.UUID(image_id))
     
     def get_file_upload_metadata(self, file_upload_id: uuid.UUID) -> FileUploadMetadata:
         file_upload_metadata_statement = select(FileUploadMetadata).where(FileUploadMetadata.file_upload_id == file_upload_id)
@@ -62,6 +64,17 @@ class ModelPipeline(Pipeline):
         if model_image_metadata is None:
             raise Exception("Model metadata not found")
         return model_image_metadata
+    
+    def get_preprocessed_image(self, image_id: str, type: str) -> FileUploadPreProcess:
+        return self.__upload_image_service.get_preprocessed_image(uuid.UUID(image_id), type)
+
+    def __resize_image(self, image: Image) -> Image:
+        return image.resize((self.IMG_W, self.IMG_H))
+    
+    def __get_bytes_from_image(self, image: Image) -> bytes:
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        return img_byte_arr.getvalue()
         
     async def process_inital_image(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
@@ -69,20 +82,23 @@ class ModelPipeline(Pipeline):
         file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
         with Image.open(file_path) as image:
             width, height = image.size
+            resized_image = self.__resize_image(image)
+            resized_image = center_crop(resized_image)
         file_size = os.path.getsize(file_path)
         file_upload_metadata:FileUploadMetadata  = FileUploadMetadata(file_upload_id=file_upload.id, width=width, height=height, size=file_size)
         self.__logger.info(f"Processing image: {image_id}")
         self.session.add(file_upload_metadata)
+        self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_resized", self.__get_bytes_from_image(resized_image), self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_RESIZED)
         self.session.commit()
         return 1
     
     async def process_openpose(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
-        file_upload: FileUpload = self.get_file_upload(image_id)
-        file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
+        file_preprocess: FileUploadPreProcess = self.get_preprocessed_image(image_id, self.PREPROCESSED_RESIZED)
+        file_path: str = self.__storage_manager.get_file_path(file_preprocess.fullpath)
         openpose_runtime = get_openpose_runtime()
-        keypoints: OpenPoseKeypoins = openpose_runtime.infer(file_path, 512)
-        model_keypoints: ModelImageMetadata = ModelImageMetadata(file_upload_id=file_upload.id, keypoints=json.dumps(keypoints.pose_keypoints_2d))
+        keypoints: OpenPoseKeypoins = openpose_runtime.infer(file_path)
+        model_keypoints: ModelImageMetadata = ModelImageMetadata(file_upload_id=file_preprocess.orginal_file_upload_id, keypoints=json.dumps(keypoints.pose_keypoints_2d))
         self.session.add(model_keypoints)
         self.session.commit()
         self.__logger.info(f"Processing image: {image_id}")
@@ -91,11 +107,13 @@ class ModelPipeline(Pipeline):
     async def process_agnostic_mask(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
         file_upload: FileUpload = self.get_file_upload(image_id)
-        file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
+        file_preprocess: FileUploadPreProcess = self.get_preprocessed_image(image_id, self.PREPROCESSED_RESIZED)
+        file_path: str = self.__storage_manager.get_file_path(file_preprocess.fullpath)
         vton_img = Image.open(file_path)
+
         agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
-        agnostic_file_path = f"{image_id}_agnostic.{self.AGNOSTIC_FILE_EXTENSION}"
-        self.__storage_manager.create_file(agnostic_file_path, agnostic_mask_bytes)
+        self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_agnostic", agnostic_mask_bytes, self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC)
+
         model_parse = get_humanparsing_runtime().infer(file_path)
         image_parse = model_parse[0]
         model_metadata: ModelImageMetadata = self.get_model_image_metadata(file_upload.id)
@@ -104,25 +122,24 @@ class ModelPipeline(Pipeline):
         mask = mask.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
         mask_gray = mask_gray.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
         masked_vton_img = Image.composite(mask_gray, vton_img, mask)
-        agnostic_file_v2_path = f"{image_id}_v2_agnostic.{self.AGNOSTIC_FILE_EXTENSION}"
-        img_byte_arr = io.BytesIO()
-        masked_vton_img.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-        self.__storage_manager.create_file(agnostic_file_v2_path, img_byte_arr)
+
+        self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_v2_agnostic", self.__get_bytes_from_image(masked_vton_img), self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC_V2)
+
+
         self.__logger.info(f"Processing image: {image_id}")
         return 3
     
-    async def process_denpose(self, parameter: dict) -> int:
+    async def process_densepose(self, parameter: dict) -> int:
         image_id: str = parameter["file_id"]
         file_upload: FileUpload = self.get_file_upload(image_id)
-        file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
+        file_preprocess: FileUploadPreProcess = self.get_preprocessed_image(image_id, self.PREPROCESSED_RESIZED)
+        file_path: str = self.__storage_manager.get_file_path(file_preprocess.fullpath)
+
         model_denpose = get_densepose_runtime()
-        densepose_file_path = f"{image_id}_densepose.{self.AGNOSTIC_FILE_EXTENSION}"
         denpose: Image = model_denpose.infer(file_path)
-        img_byte_arr = io.BytesIO()
-        denpose.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-        self.__storage_manager.create_file(densepose_file_path, img_byte_arr)
+        
+        self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_densepose", self.__get_bytes_from_image(denpose), self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_DENSEPOSE)
+
         self.__logger.info(f"Processing image: {image_id}")
         return 4
     

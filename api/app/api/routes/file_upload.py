@@ -13,7 +13,7 @@ def create_upload_file_person(
 ):
     correlation_id = getattr(request.state, 'correlation_id', None)
     
-    upload_id: uuid.UUID = upload_image_service.create_image(file.filename, file.file.read(), correlation_id, "person")
+    upload_id: uuid.UUID = upload_image_service.create_image(file.filename, file.file.read(), correlation_id, "model")
     return {"filename": file.filename, "correlation_id": correlation_id, "upload_id": upload_id}
 
 @router.post("/uploadfile/cloth")

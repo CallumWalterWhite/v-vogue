@@ -7,16 +7,18 @@ def get_status_image_service(session:SessionDep):
     return StatusImageService(session)
 
 class ImageStautsDto:
-    def __init__(self, file_id: str, has_completed: bool, has_error: bool, error_message: str):
+    def __init__(self, file_id: str, has_completed: bool, has_error: bool, error_message: str, state: int = -1):
         self.file_id = file_id
         self.has_completed = has_completed
         self.has_error = has_error
         self.error_message = error_message
+        self.state = state
         
     file_id: str
     has_completed: bool
     has_error: bool
     error_message: str
+    state: int
 
 class StatusImageService:
     def __init__(self, session:SessionDep):
@@ -24,7 +26,7 @@ class StatusImageService:
 
     def get_image_status(self, file_id: str) -> ImageStautsDto:
         image_id = uuid.UUID(file_id)
-        file_upload_pipeline_statement = select(FileUploadPipeline).where(FileUploadPipeline.id == image_id)
+        file_upload_pipeline_statement = select(FileUploadPipeline).where(FileUploadPipeline.file_upload_id == image_id)
         file_upload_pipeline: FileUploadPipeline = self.session.exec(file_upload_pipeline_statement).one_or_none()
         if file_upload_pipeline is None:
             return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="File not found")
@@ -32,4 +34,4 @@ class StatusImageService:
         pipeline_state: PipelineState = self.session.exec(pipeline_state_statement).one_or_none()
         if pipeline_state is None:
             return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="Pipeline not found")
-        return ImageStautsDto(file_id=file_id, has_completed=pipeline_state.has_completed, has_error=pipeline_state.has_error, error_message=pipeline_state.error_message)
+        return ImageStautsDto(file_id=file_id, has_completed=pipeline_state.has_completed, has_error=pipeline_state.has_error, error_message=pipeline_state.error_message, state=pipeline_state.state)
