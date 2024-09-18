@@ -33,8 +33,9 @@ class VitonImageService:
         self.session.commit()
         return viton_image
     
-    def update_viton_image(self, id: uuid.UUID, path: str) -> VitonUploadImage:
+    def update_viton_image(self, id: uuid.UUID, path: str, is_completed: bool) -> VitonUploadImage:
         viton_image = self.get_viton_image(id)
         viton_image.path = path
+        viton_image.is_completed = is_completed
         self.session.commit()
         return viton_image

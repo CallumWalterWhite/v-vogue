@@ -1,5 +1,4 @@
 import uuid
-import os
 from sqlmodel import select
 from app.service.viton_service import get_viton_image_service
 from app.storage.storage_manager import StorageManager
@@ -10,8 +9,7 @@ import logging
 from app.handlers.message_types import MessageTypes
 from app.service.upload_image_service import get_upload_image_service
 from app.inference import get_humanparsing_runtime, get_densepose_runtime, get_vitonHD_runtime
-from utils_stableviton import get_mask_location, center_crop, get_batch
-from app.inference.openpose_inference import OpenPoseKeypoins
+from utils_stableviton import get_mask_location, get_batch
 from enum import Enum
 from PIL import Image
 import json
@@ -28,6 +26,7 @@ class VitonHDPipeline(Pipeline):
     #TODO: parse all 3 categories to get the mask and create matrix for the mask with the garment, DEFAULT is upper_body
     category_dict_utils = ['upper_body', 'lower_body', 'dresses']
     PREPROCESS_FILE_EXTENSION = "png"
+    OUTPUT_FILE_EXTENSION="png"
     PREPROCESSED_RESIZED = "resized"
     IMG_H = 1024 #defalt height
     IMG_W = 768 #default width
@@ -66,6 +65,11 @@ class VitonHDPipeline(Pipeline):
     
     def get_preprocessed_image(self, image_id: uuid.UUID, type: str) -> FileUploadPreProcess:
         return self.__upload_image_service.get_preprocessed_image(image_id, type)
+    
+    def __get_bytes_from_image(self, image: Image) -> bytes:
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        return img_byte_arr.getvalue()
         
     async def process_inital_image(self, parameter: dict) -> int:
         id: str = parameter["viton_image_id"]
@@ -81,8 +85,8 @@ class VitonHDPipeline(Pipeline):
         resized_file_path: str = self.__storage_manager.get_file_path(resized_model_image.fullpath)
         cloth_file_path: str = self.__storage_manager.get_file_path(resized_cloth_image.fullpath)
 
-        vton_img = Image.open(resized_file_path)
-        garm_img = Image.open(cloth_file_path)
+        vton_img = Image.open(resized_file_path).convert('RGB')
+        garm_img = Image.open(cloth_file_path).convert('RGB')
         
         pose_data = json.loads(model_image_metadata.keypoints)
 
@@ -93,6 +97,7 @@ class VitonHDPipeline(Pipeline):
         mask_gray = mask_gray.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
         masked_vton_img = Image.composite(mask_gray, vton_img, mask)
         
+        vton_img = vton_img.resize((self.IMG_W, self.IMG_H))
         model_denpose = get_densepose_runtime()
         densepose: Image = model_denpose.infer(resized_file_path)
 
@@ -108,8 +113,10 @@ class VitonHDPipeline(Pipeline):
 
         vitonHD_runtime = get_vitonHD_runtime()
 
-        result = vitonHD_runtime.infer(batch, 20)
-
+        result = vitonHD_runtime.infer(batch, 35)
+        results_bytes = self.__get_bytes_from_image(result)
+        self.__storage_manager.create_file(f'{id}.{self.OUTPUT_FILE_EXTENSION}', results_bytes)
+        self.__viton_image_service.update_viton_image(id, f'{id}.{self.OUTPUT_FILE_EXTENSION}', True)
         return 1
     
     def get_process_message_type(self) -> str:

@@ -16,11 +16,7 @@ async def receive_message(
     request: Request,
     message: InboundMessageSchema
 ):
-    if message.correlation_id == None:
-        correlation_id = getattr(request.state, 'correlation_id', None)
-    else:
-        correlation_id = uuid.UUID(message.correlation_id)
-        request.state.correlation_id = correlation_id
+    correlation_id = getattr(request.state, 'correlation_id', None)
     message_handler = MessageHandlerFactory(message.message_type)
     cotent_dict = json.loads(message.content)
     await message_handler.handle(cotent_dict, correlation_id)
