@@ -116,7 +116,7 @@ class VitonHDPipeline(Pipeline):
         result = vitonHD_runtime.infer(batch, 50)
         results_bytes = self.__get_bytes_from_image(result)
         self.__storage_manager.create_file(f'{id}.{self.OUTPUT_FILE_EXTENSION}', results_bytes)
-        self.__viton_image_service.update_viton_image(id, f'{id}.{self.OUTPUT_FILE_EXTENSION}', True)
+        self.__viton_image_service.update_viton_image(uuid.UUID(id), f'{id}.{self.OUTPUT_FILE_EXTENSION}', True)
         return 1
     
     def get_process_message_type(self) -> str:

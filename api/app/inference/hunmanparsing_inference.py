@@ -4,8 +4,8 @@ from PIL import Image
 from utils_stableviton import get_mask_location, get_batch, tensor2img, center_crop
 
 class HumanParsingInference():
-    IMG_H = 1024
-    IMG_W = 768
+    IMG_H = 512
+    IMG_W = 384
     def __init__(self):
         self.parser = Parsing(0)
     

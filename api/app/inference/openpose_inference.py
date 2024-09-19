@@ -16,8 +16,8 @@ class OpenPoseKeypoins:
         }
 
 class OpenPoseInference():
-    IMG_H = 1024
-    IMG_W = 768
+    IMG_H = 512
+    IMG_W = 384
     def __init__(self):
         self.preprocessor = OpenposeDetector()
         self.preprocessor.body_estimation.model.to('cuda' if torch.cuda.is_available() else 'cpu')

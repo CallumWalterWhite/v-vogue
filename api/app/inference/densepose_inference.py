@@ -6,8 +6,8 @@ import numpy as np
 from PIL import Image
 
 class DensePoseInference():
-    IMG_H = 1024
-    IMG_W = 768
+    IMG_H = 512
+    IMG_W = 384
     def __init__(self):
         ##TODO: move url to settings
         self.densepose_model_hd = DensePose4Gradio(
