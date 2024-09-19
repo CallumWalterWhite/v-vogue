@@ -28,8 +28,8 @@ class VitonHDPipeline(Pipeline):
     PREPROCESS_FILE_EXTENSION = "png"
     OUTPUT_FILE_EXTENSION="png"
     PREPROCESSED_RESIZED = "resized"
-    IMG_H = 1024 #defalt height
-    IMG_W = 768 #default width
+    IMG_H = 512 #defalt height
+    IMG_W = 384 #default width
     def __init__(self):
         super().__init__()
         self.__storage_manager: StorageManager = get_storage_manager()
@@ -113,7 +113,7 @@ class VitonHDPipeline(Pipeline):
 
         vitonHD_runtime = get_vitonHD_runtime()
 
-        result = vitonHD_runtime.infer(batch, 35)
+        result = vitonHD_runtime.infer(batch, 50)
         results_bytes = self.__get_bytes_from_image(result)
         self.__storage_manager.create_file(f'{id}.{self.OUTPUT_FILE_EXTENSION}', results_bytes)
         self.__viton_image_service.update_viton_image(id, f'{id}.{self.OUTPUT_FILE_EXTENSION}', True)

@@ -31,8 +31,8 @@ class ModelPipeline(Pipeline):
     PREPROCESSED_AGNOSTIC = "agnostic"
     PREPROCESSED_AGNOSTIC_V2 = "agnostic_v2"
     PREPROCESSED_DENSEPOSE = "densepose"
-    IMG_H = 1024 #defalt height
-    IMG_W = 768 #default width
+    IMG_H = 512 #defalt height
+    IMG_W = 384 #default width
     def __init__(self):
         super().__init__()
         self.__storage_manager: StorageManager = get_storage_manager()
@@ -111,8 +111,8 @@ class ModelPipeline(Pipeline):
         file_path: str = self.__storage_manager.get_file_path(file_preprocess.fullpath)
         vton_img = Image.open(file_path)
 
-        agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
-        self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_agnostic", agnostic_mask_bytes, self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC)
+        # agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
+        # self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_agnostic", agnostic_mask_bytes, self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC)
 
         model_parse = get_humanparsing_runtime().infer(file_path)
         image_parse = model_parse[0]

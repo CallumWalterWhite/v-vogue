@@ -12,8 +12,8 @@ import torch
 from app.core.config import settings
 
 class VitonHDInference():
-    IMG_H = 1024
-    IMG_W = 768
+    IMG_H = 512
+    IMG_W = 384
     def __init__(self, device):
         ##TODO: move url to settings
         config = OmegaConf.load(settings.VITONHD_MODEL_CONFIG_PATH)
@@ -28,8 +28,9 @@ class VitonHDInference():
         model.eval()
         self.model = model
         self.sampler = PLMSSampler(self.model)
-    #TODO: viton model not using gpu at inference, not sure why
     def infer(self, batch, n_steps) -> Image:
+        torch.cuda.empty_cache()
+        torch.cuda.memory_summary()
         z, c = self.model.get_input(batch, self.params.first_stage_key)
         bs = z.shape[0]
         c_crossattn = c["c_crossattn"][0][:bs]
@@ -46,11 +47,12 @@ class VitonHDInference():
 
         ts = torch.full((1,), 999, device=z.device, dtype=torch.long)
         start_code = self.model.q_sample(z, ts)     
+        shape = (4, self.IMG_H//8, self.IMG_W//8) 
 
         output, _, _ = self.sampler.sample(
             n_steps,
             bs,
-            (4, self.IMG_H//8, self.IMG_W//8),
+            shape,
             c,
             x_T=start_code,
             verbose=False,

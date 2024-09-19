@@ -17,8 +17,8 @@ class ClothPipeline(Pipeline):
     PREPROCESS_FILE_EXTENSION="png"
     PREPROCESSED_RESIZED = "resized"
     PREPROCESSED_AGNOSTIC = "agnostic"
-    IMG_H = 1024 #defalt height
-    IMG_W = 768 #default width
+    IMG_H = 512 #defalt height
+    IMG_W = 384 #default width
     def __init__(self):
         super().__init__()
         self.__storage_manager: StorageManager = get_storage_manager()
@@ -81,8 +81,8 @@ class ClothPipeline(Pipeline):
         image_id: str = parameter["file_id"]
         file_upload: FileUpload = self.get_file_upload(image_id)
         file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
-        agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
-        self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_agnostic", agnostic_mask_bytes, self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC)
+        # agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
+        # self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_agnostic", agnostic_mask_bytes, self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC)
         logging.getLogger(__name__).info(f"Processing image: {image_id}")
         return 2
     
