@@ -46,6 +46,9 @@ class ModelImageMetadata(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     file_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
     keypoints: str | None = Field(default=None) #TODO: should be a json field
+    mask: bytes | None = Field(default=None)
+    masked_image: bytes | None = Field(default=None)
+    densepose: bytes | None = Field(default=None)
 
 class VitonUploadImage(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

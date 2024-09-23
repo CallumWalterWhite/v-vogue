@@ -2,6 +2,7 @@ import os
 import uuid
 import io
 from sqlmodel import select
+from app.inference.base_inference import BaseInference
 from app.models import FileUpload, FileUploadMetadata,FileUploadPreProcess
 from app.handlers.message_types import MessageTypes
 from app.storage.deps import get_storage_manager
@@ -17,8 +18,8 @@ class ClothPipeline(Pipeline):
     PREPROCESS_FILE_EXTENSION="png"
     PREPROCESSED_RESIZED = "resized"
     PREPROCESSED_AGNOSTIC = "agnostic"
-    IMG_H = 512 #defalt height
-    IMG_W = 384 #default width
+    IMG_H = BaseInference.IMG_H
+    IMG_W = BaseInference.IMG_W
     def __init__(self):
         super().__init__()
         self.__storage_manager: StorageManager = get_storage_manager()

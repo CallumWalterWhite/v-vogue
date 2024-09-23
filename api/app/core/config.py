@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
     LOCAL_DB: str = "local.db"
+    
+    IMAGE_SIZING_H = 512
+    IMAGE_SIZING_W = 384
      
     LOAD_VITONHD_MODEL: bool = True
     LOAD_CLOTH_SEGMENTATION_MODEL: bool = True
@@ -75,7 +78,7 @@ class Settings(BaseSettings):
     LOAD_HUMAN_PARSING_MODEL: bool = True
     LOAD_DENPOSE_MODEL: bool = True
     VITONHD_MODEL_CONFIG_PATH: str = "../vitonhd/configs/VITONHD.yaml"
-    VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD.ckpt"
+    VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD_1024.ckpt"
     CLOTH_SEGMENTATION_MODEL_PATH: str = "../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth"
     
     STORAGE_SETTING: Literal["local", "azure"] = "local"

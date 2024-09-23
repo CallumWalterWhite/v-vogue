@@ -6,13 +6,14 @@ from app.storage.deps import get_storage_manager
 from app.models import FileUpload, FileUploadMetadata, ModelImageMetadata,FileUploadPreProcess, VitonUploadImage
 from app.pipeline import Pipeline
 import logging
+from app.pipeline.util import convert_bytes_to_pil_image
 from app.handlers.message_types import MessageTypes
 from app.service.upload_image_service import get_upload_image_service
-from app.inference import get_humanparsing_runtime, get_densepose_runtime, get_vitonHD_runtime
-from utils_stableviton import get_mask_location, get_batch
+from app.inference import get_vitonHD_runtime
+from app.inference.base_inference import BaseInference
+from utils_stableviton import get_batch
 from enum import Enum
 from PIL import Image
-import json
 import io
 
 class ModelPipelineProcess(Enum):
@@ -28,8 +29,8 @@ class VitonHDPipeline(Pipeline):
     PREPROCESS_FILE_EXTENSION = "png"
     OUTPUT_FILE_EXTENSION="png"
     PREPROCESSED_RESIZED = "resized"
-    IMG_H = 512 #defalt height
-    IMG_W = 384 #default width
+    IMG_H = BaseInference.IMG_H
+    IMG_W = BaseInference.IMG_W
     def __init__(self):
         super().__init__()
         self.__storage_manager: StorageManager = get_storage_manager()
@@ -85,22 +86,13 @@ class VitonHDPipeline(Pipeline):
         resized_file_path: str = self.__storage_manager.get_file_path(resized_model_image.fullpath)
         cloth_file_path: str = self.__storage_manager.get_file_path(resized_cloth_image.fullpath)
 
-        vton_img = Image.open(resized_file_path).convert('RGB')
-        garm_img = Image.open(cloth_file_path).convert('RGB')
+        vton_img: Image = Image.open(resized_file_path).convert('RGB')
+        garm_img: Image = Image.open(cloth_file_path).convert('RGB')
         
-        pose_data = json.loads(model_image_metadata.keypoints)
-
-        model_parse = get_humanparsing_runtime().infer(resized_file_path)
-        image_parse = model_parse[0]
-        mask, mask_gray = get_mask_location('hd', self.category_dict_utils[0], image_parse, pose_data, radius=5)
-        mask = mask.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
-        mask_gray = mask_gray.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
-        masked_vton_img = Image.composite(mask_gray, vton_img, mask)
+        mask: Image = convert_bytes_to_pil_image(model_image_metadata.mask)
+        masked_vton_img: Image = convert_bytes_to_pil_image(model_image_metadata.masked_image)
+        densepose: Image = convert_bytes_to_pil_image(model_image_metadata.densepose)
         
-        vton_img = vton_img.resize((self.IMG_W, self.IMG_H))
-        model_denpose = get_densepose_runtime()
-        densepose: Image = model_denpose.infer(resized_file_path)
-
         batch = get_batch(
             vton_img, 
             garm_img, 
@@ -113,7 +105,7 @@ class VitonHDPipeline(Pipeline):
 
         vitonHD_runtime = get_vitonHD_runtime()
 
-        result = vitonHD_runtime.infer(batch, 50)
+        result = vitonHD_runtime.infer(batch, 20)
         results_bytes = self.__get_bytes_from_image(result)
         self.__storage_manager.create_file(f'{id}.{self.OUTPUT_FILE_EXTENSION}', results_bytes)
         self.__viton_image_service.update_viton_image(uuid.UUID(id), f'{id}.{self.OUTPUT_FILE_EXTENSION}', True)

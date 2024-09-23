@@ -1,12 +1,11 @@
 from humanparsing.run_parsing import Parsing
-import numpy as np
 from PIL import Image
-from utils_stableviton import get_mask_location, get_batch, tensor2img, center_crop
+from app.core.config import settings
+from app.inference.base_inference import BaseInference
 
-class HumanParsingInference():
-    IMG_H = 512
-    IMG_W = 384
+class HumanParsingInference(BaseInference):
     def __init__(self):
+        super().__init__(settings.IMAGE_SIZING_H, settings.IMAGE_SIZING_W)
         self.parser = Parsing(0)
     
     def infer(self, file_path: str) -> bytes:

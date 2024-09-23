@@ -1,21 +1,16 @@
-from pathlib import Path
-import sys
-import os
 from vitonhd.cldm.model import create_model
 from vitonhd.cldm.plms_hacked import PLMSSampler
 from vitonhd.cldm.cldm import ControlLDM
 from utils_stableviton import tensor2img
 from omegaconf import OmegaConf
 from PIL import Image
-import numpy as np
 import torch
 from app.core.config import settings
+from app.inference.base_inference import BaseInference
 
-class VitonHDInference():
-    IMG_H = 512
-    IMG_W = 384
+class VitonHDInference(BaseInference):
     def __init__(self, device):
-        ##TODO: move url to settings
+        super().__init__(settings.IMAGE_SIZING_H, settings.IMAGE_SIZING_W)
         config = OmegaConf.load(settings.VITONHD_MODEL_CONFIG_PATH)
         config.model.params.img_H = self.IMG_H
         config.model.params.img_W = self.IMG_W
@@ -28,9 +23,11 @@ class VitonHDInference():
         model.eval()
         self.model = model
         self.sampler = PLMSSampler(self.model)
+        
+    @torch.autocast("cuda")
+    @torch.no_grad()
     def infer(self, batch, n_steps) -> Image:
         torch.cuda.empty_cache()
-        torch.cuda.memory_summary()
         z, c = self.model.get_input(batch, self.params.first_stage_key)
         bs = z.shape[0]
         c_crossattn = c["c_crossattn"][0][:bs]
