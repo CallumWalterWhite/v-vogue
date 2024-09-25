@@ -7,7 +7,10 @@ import csv
 import logging
 import numpy as np
 from typing import Any, Callable, Dict, List, Optional, Union
-import av
+try:
+    import av
+except ImportError:
+    av = None
 import torch
 from torch.utils.data.dataset import Dataset
 
