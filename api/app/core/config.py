@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
-    ] = []
+    ] = ['http://localhost:8081']
     
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -69,8 +69,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
     LOCAL_DB: str = "local.db"
     
-    IMAGE_SIZING_H = 512
-    IMAGE_SIZING_W = 384
+    IMAGE_SIZING_H: int = 512
+    IMAGE_SIZING_W: int = 384
      
     LOAD_VITONHD_MODEL: bool = True
     LOAD_CLOTH_SEGMENTATION_MODEL: bool = True
