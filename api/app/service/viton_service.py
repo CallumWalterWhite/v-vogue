@@ -2,19 +2,22 @@ import json
 from typing import Annotated
 from fastapi import Depends
 from sqlmodel import select
+from app.storage.deps import get_storage_manager
+from app.storage.storage_manager import StorageManager
 from app.handlers.message_types import MessageTypes
 from app.models import OutboundMessage, VitonUploadImage
 from app.core.deps import SessionDep
 from app.service.message_service import MessageService, get_message_service
 import uuid
 
-def get_viton_image_service(session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)]):
-    return VitonImageService(session, message_service)
+def get_viton_image_service(session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)], storage_manager: Annotated[StorageManager, Depends(get_storage_manager)]):
+    return VitonImageService(session, message_service, storage_manager)
 
 class VitonImageService:
-    def __init__(self, session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)]):
+    def __init__(self, session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)], storage_manager: Annotated[StorageManager, Depends(get_storage_manager)]):
         self.session = session
         self.message_service = message_service
+        self.storage_manager = storage_manager
 
     def get_viton_image(self, id: uuid.UUID) -> VitonUploadImage:
         viton_image_statement = select(VitonUploadImage).where(VitonUploadImage.id == id)
@@ -39,3 +42,7 @@ class VitonImageService:
         viton_image.is_completed = is_completed
         self.session.commit()
         return viton_image
+    
+    def get_image_bytes(self, id: uuid.UUID) -> bytes:
+        viton_image = self.get_viton_image(id)
+        return self.storage_manager.get_file(viton_image.path)

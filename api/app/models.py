@@ -27,6 +27,7 @@ class FileUpload(SQLModel, table=True):
     fullpath: str | None = Field(default=None, max_length=255)
     fileextension: str | None = Field(default=None, max_length=255)
     type: str | None = Field(default=None, max_length=255)
+    image_type: str | None = Field(default=None, max_length=255)
 
 class FileUploadPreProcess(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -57,6 +58,11 @@ class VitonUploadImage(SQLModel, table=True):
     catergory: str | None = Field(default=None, max_length=255)
     is_completed: bool | None = Field(default=False)
     path: str | None = Field(default=None, max_length=255)
+
+class VitonUploadPipeline(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    viton_upload_id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    pipeline_id: uuid.UUID = Field(default_factory=uuid.uuid4)
 
 class FileUploadPipeline(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
