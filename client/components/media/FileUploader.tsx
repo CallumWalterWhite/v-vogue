@@ -12,16 +12,22 @@ import {
 } from 'react-native';
 import { IUploadService, FileObject, UploadResponse } from '../../services/media/IUploadService';
 import { launchImageLibrary, ImageLibraryOptions } from 'react-native-image-picker';
+import { FileUploadStatus, IUploadStatusService, FileUploadStatusResponse } from '@/services/media/IUploadStatusService';
 
 interface FileUploaderProps {
   uploadService: IUploadService;
+  requiresPostProgressing?: boolean;
+  uploadStatusService?: IUploadStatusService;
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({ uploadService }) => {
+const FileUploader: React.FC<FileUploaderProps> = ({ uploadService, requiresPostProgressing, uploadStatusService }) => {
   const [file, setFile] = useState<FileObject | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [postProcessing, setPostProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
+  const [postProgress, setPostProgress] = useState<number>(0);
   const [response, setResponse] = useState<UploadResponse | null>(null);
+  const [postProcessingResponse, setPostProcessingResponse] = useState<FileUploadStatusResponse | null>(null);
 
   /**
    * Opens the image library for the user to select an image.
@@ -78,6 +84,49 @@ const FileUploader: React.FC<FileUploaderProps> = ({ uploadService }) => {
     } finally {
       setUploading(false);
     }
+
+    if (requiresPostProgressing && uploadStatusService && response?.upload_id) {
+      setPostProcessing(true);
+      setPostProgress(0);
+      
+      try {
+        const fileStatus: FileUploadStatus = {
+          fileId: response!.upload_id,
+        };
+    
+        const checkProgression = async () => {
+          try {
+            const postProcessingResponse: FileUploadStatusResponse = await uploadStatusService.checkStatusFile(fileStatus, setPostProgress);
+    
+            if (postProcessingResponse.has_error) {
+              clearInterval(intervalId);
+              Alert.alert('Post Processing Failed', postProcessingResponse.error_message);
+              setPostProcessing(false);
+              setPostProcessingResponse(postProcessingResponse);
+            }
+    
+            if (postProcessingResponse.has_completed) {
+              clearInterval(intervalId);
+              Alert.alert('Success', 'File post-processing completed!');
+              setPostProcessing(false);
+              setPostProcessingResponse(postProcessingResponse);
+            }
+          } catch (error: any) {
+            clearInterval(intervalId);
+            console.error('Post Processing Error:', error);
+            Alert.alert('Post Processing Failed', typeof error === 'string' ? error : 'There was an error post-processing the file.');
+            setPostProcessing(false);
+          }
+        };
+    
+        const intervalId = setInterval(checkProgression, 1000); // Check every second
+    
+      } catch (error: any) {
+        console.error('Post Processing Error:', error);
+        Alert.alert('Post Processing Failed', typeof error === 'string' ? error : 'There was an error initiating post-processing.');
+        setPostProcessing(false);
+      }
+    }
   };
 
   return (
@@ -103,14 +152,21 @@ const FileUploader: React.FC<FileUploaderProps> = ({ uploadService }) => {
         </View>
       )}
 
-      {response && (
+      {postProcessing && (
+        <View style={styles.progressContainer}>
+          <ActivityIndicator size="small" color="#0000ff" />
+          <Text style={styles.progressText}>{postProgress}%</Text>
+        </View>
+      )}
+
+      {postProcessingResponse && (
         <View style={styles.responseContainer}>
-          <Text style={styles.responseText}>Upload Response:</Text>
-          <Text style={styles.responseContent}>
-            Filename: {response.filename}{'\n'}
-            Correlation ID: {response.correlation_id}{'\n'}
-            Upload ID: {response.upload_id}
-          </Text>
+          <Text style={styles.responseText}>Post Processing Response:</Text>
+          {postProcessingResponse.has_error ? (
+            <Text style={styles.responseContent}>{postProcessingResponse.error_message}</Text>
+          ) : (
+            <Text style={styles.responseContent}>Post processing completed successfully!</Text>
+          )}
         </View>
       )}
     </View>

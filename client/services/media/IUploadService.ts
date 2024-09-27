@@ -26,6 +26,6 @@ export interface IUploadService {
   export interface UploadResponse {
     filename: string;
     correlation_id: string | null;
-    upload_id: string; // UUID as string
+    upload_id: string;
   }
   

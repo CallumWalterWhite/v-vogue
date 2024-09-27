@@ -22,7 +22,8 @@ class PipelineMessageFactory():
         return OutboundMessage(content=json.dumps(message), message_type=process_message_type, correlation_id=correlation_id)
 
 class Pipeline(ABC):    
-    def __init__(self):
+    def __init__(self, pipeline_type:str):
+        self.type = pipeline_type
         self.session: Session = get_session()
         self.__message_service: MessageService = get_message_service(self.session)
         self.__logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class Pipeline(ABC):
             raise ValueError("pipeline_parameter cannot be empty")
         if len(json_pipeline_parameter) > 255:
             raise ValueError("pipeline_parameter cannot be more than 255 characters")
-        pipeline_state = PipelineState(state=0, pipeline_parameters=json_pipeline_parameter)
+        pipeline_state = PipelineState(pipeline_type=self.type,state=0, pipeline_parameters=json_pipeline_parameter)
         self.session.add(pipeline_state)
         self.session.flush() #TODO: remove flush, move to application generated id
         self.session.commit()

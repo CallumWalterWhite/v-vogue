@@ -10,7 +10,6 @@ from app.storage.storage_manager import StorageManager
 from app.service.upload_image_service import get_upload_image_service
 from app.pipeline import Pipeline
 import logging
-from app.inference import get_cloth_segmentation_inference_runtime
 from utils_stableviton import center_crop
 from PIL import Image
 
@@ -21,7 +20,7 @@ class ClothPipeline(Pipeline):
     IMG_H = BaseInference.IMG_H
     IMG_W = BaseInference.IMG_W
     def __init__(self):
-        super().__init__()
+        super().__init__("garment")
         self.__storage_manager: StorageManager = get_storage_manager()
         self.__logger = logging.getLogger(__name__)
         self.__upload_image_service = get_upload_image_service(self.session, self.__storage_manager, None) #message service is not needed.. need to refactor this
@@ -29,8 +28,7 @@ class ClothPipeline(Pipeline):
     def process_graph(self):
         return {
             0: self.process_inital_image,
-            1: self.process_mask,
-            2: self.complete_state
+            1: self.complete_state
         }
     
         
@@ -77,15 +75,6 @@ class ClothPipeline(Pipeline):
         self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_resized", self.__get_bytes_from_image(resized_image), self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_RESIZED)
         self.session.commit()
         return 1
-    
-    async def process_mask(self, parameter: dict) -> int:
-        image_id: str = parameter["file_id"]
-        file_upload: FileUpload = self.get_file_upload(image_id)
-        file_path: str = self.__storage_manager.get_file_path(file_upload.fullpath)
-        # agnostic_mask_bytes: bytes = get_cloth_segmentation_inference_runtime().infer(file_path)
-        # self.__upload_image_service.create_image_preprocess(file_upload.id, f"{image_id}_agnostic", agnostic_mask_bytes, self.PREPROCESS_FILE_EXTENSION, self.PREPROCESSED_AGNOSTIC)
-        logging.getLogger(__name__).info(f"Processing image: {image_id}")
-        return 2
     
     
     def get_process_message_type(self) -> str:

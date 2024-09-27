@@ -65,6 +65,7 @@ class FileUploadPipeline(SQLModel, table=True):
 
 class PipelineState(SQLModel, table=True):
     pipeline_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    pipeline_type: str | None = Field(default=None, max_length=255)
     state: int | None = Field(default=0)
     has_completed: bool | None = Field(default=False)
     has_error: bool | None = Field(default=False)

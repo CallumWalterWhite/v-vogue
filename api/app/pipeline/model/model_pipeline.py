@@ -9,7 +9,7 @@ from app.pipeline import Pipeline
 import logging
 from app.handlers.message_types import MessageTypes
 from app.service.upload_image_service import get_upload_image_service
-from app.inference import get_openpose_runtime, get_humanparsing_runtime, get_densepose_runtime
+from app.inference import InferenceManager
 from utils_stableviton import get_mask_location, center_crop
 from app.inference.openpose_inference import OpenPoseKeypoins
 from app.pipeline.util import convert_pil_image_to_bytes
@@ -26,7 +26,8 @@ class ModelPipelineProcess(Enum):
 
 class ModelPipeline(Pipeline):
     #TODO: parse all 3 categories to get the mask and create matrix for the mask with the garment, DEFAULT is upper_body
-    category_dict_utils = ['upper_body', 'lower_body', 'dresses']
+    CATEGORY_DICT_UTILS = ['upper_body', 'lower_body', 'dresses']
+    DEFAULT_CATEGORY = 0
     PREPROCESS_FILE_EXTENSION = "png"
     PREPROCESSED_RESIZED = "resized"
     PREPROCESSED_AGNOSTIC = "agnostic"
@@ -35,7 +36,7 @@ class ModelPipeline(Pipeline):
     IMG_H = BaseInference.IMG_H
     IMG_W = BaseInference.IMG_W
     def __init__(self):
-        super().__init__()
+        super().__init__("model")
         self.__storage_manager: StorageManager = get_storage_manager()
         self.__logger = logging.getLogger(__name__)
         self.__upload_image_service = get_upload_image_service(self.session, self.__storage_manager, None) #message service is not needed.. need to refactor this
@@ -92,7 +93,7 @@ class ModelPipeline(Pipeline):
         image_id: str = parameter["file_id"]
         file_preprocess: FileUploadPreProcess = self.get_preprocessed_image(image_id, self.PREPROCESSED_RESIZED)
         file_path: str = self.__storage_manager.get_file_path(file_preprocess.fullpath)
-        openpose_runtime = get_openpose_runtime()
+        openpose_runtime = InferenceManager.get_openpose_runtime()
         keypoints: OpenPoseKeypoins = openpose_runtime.infer(file_path)
         model_keypoints: ModelImageMetadata = ModelImageMetadata(file_upload_id=file_preprocess.orginal_file_upload_id, keypoints=json.dumps(keypoints.pose_keypoints_2d))
         self.session.add(model_keypoints)
@@ -107,12 +108,13 @@ class ModelPipeline(Pipeline):
         file_path: str = self.__storage_manager.get_file_path(file_preprocess.fullpath)
         vton_img = Image.open(file_path)
         
-        model_parse = get_humanparsing_runtime().infer(file_path)
+        humanparsing_runtime = InferenceManager.get_humanparsing_runtime()
+        model_parse = humanparsing_runtime.infer(file_path)
         image_parse = model_parse[0]
         model_metadata: ModelImageMetadata = self.get_model_image_metadata(file_upload.id)
         pose_data = json.loads(model_metadata.keypoints)
         
-        mask, mask_gray = get_mask_location('hd', self.category_dict_utils[0], image_parse, pose_data, radius=5, width=self.IMG_W, height=self.IMG_H)
+        mask, mask_gray = get_mask_location('hd', self.CATEGORY_DICT_UTILS[self.DEFAULT_CATEGORY], image_parse, pose_data, radius=5, width=self.IMG_W, height=self.IMG_H)
         mask = mask.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
         mask_gray = mask_gray.resize((self.IMG_W, self.IMG_H), Image.NEAREST)
         masked_vton_img = Image.composite(mask_gray, vton_img, mask)
@@ -137,7 +139,7 @@ class ModelPipeline(Pipeline):
         
         model_metadata: ModelImageMetadata = self.get_model_image_metadata(file_upload.id)
         
-        model_denpose = get_densepose_runtime()
+        model_denpose = InferenceManager.get_densepose_runtime()
         denpose: Image = model_denpose.infer(file_path)
         densepose_bytes: bytes = convert_pil_image_to_bytes(denpose)
         model_metadata.densepose = densepose_bytes

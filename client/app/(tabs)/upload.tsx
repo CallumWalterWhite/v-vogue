@@ -7,26 +7,17 @@ import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-
-// Import the FileUploader component and upload services
 import FileUploader from '@/components/media/FileUploader';
 import { ModelUploadService } from '@/services/media/ModelUploadService';
-
-// Define the upload URL (Replace with your actual server URL)
-const UPLOAD_URL = 'http://10.0.2.2:8000/uploadfile/person'; // For Android Emulator
-// const UPLOAD_URL = 'http://localhost:8000/uploadfile/person'; // For iOS Simulator or web
+import { UploadStatusService } from '@/services/media/UploadStatusService';
+import { GarmentUploadService } from '@/services/media/GarmentUploadService';
 
 export default function HomeScreen() {
-  // State to manage the current upload service
   const [currentService, setCurrentService] = useState<'axios' | 'fetch'>('axios');
-
-  // Instantiate the upload services
-  const axiosUploadService = new ModelUploadService();
-  const fetchUploadService = new ModelUploadService();
-
-  // Select the appropriate service based on currentService state
-  const selectedUploadService = currentService === 'axios' ? axiosUploadService : fetchUploadService;
-
+  const modelUploadService = new ModelUploadService();
+  const garmentUploadService = new GarmentUploadService();
+  const uploadStatusService = new UploadStatusService();
+  const modelUploadRequriesPostProgressing: boolean = true;
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -37,65 +28,8 @@ export default function HomeScreen() {
         />
       }
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hello!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-
-      {/* Toggle Buttons to Switch Upload Services */}
-      <ThemedView style={styles.toggleContainer}>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            currentService === 'axios' && styles.activeToggleButton,
-          ]}
-          onPress={() => setCurrentService('axios')}
-        >
-          <Text style={styles.toggleButtonText}>Use Axios</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            currentService === 'fetch' && styles.activeToggleButton,
-          ]}
-          onPress={() => setCurrentService('fetch')}
-        >
-          <Text style={styles.toggleButtonText}>Use Fetch</Text>
-        </TouchableOpacity>
-      </ThemedView>
-
-      {/* FileUploader Component */}
-      <FileUploader uploadService={selectedUploadService} />
-
-      {/* Existing Step Containers */}
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
+      <FileUploader uploadService={modelUploadService} uploadStatusService={uploadStatusService} requiresPostProgressing={modelUploadRequriesPostProgressing} />
+      <FileUploader uploadService={garmentUploadService} uploadStatusService={uploadStatusService} requiresPostProgressing={true} />
     </ParallaxScrollView>
   );
 }

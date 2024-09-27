@@ -1,5 +1,3 @@
-// services/AxiosUploadService.ts
-
 import axios, { AxiosProgressEvent } from 'axios';
 import { IUploadService, FileObject, UploadResponse } from './IUploadService';
 

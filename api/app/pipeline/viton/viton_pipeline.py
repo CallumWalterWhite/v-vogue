@@ -9,7 +9,7 @@ import logging
 from app.pipeline.util import convert_bytes_to_pil_image
 from app.handlers.message_types import MessageTypes
 from app.service.upload_image_service import get_upload_image_service
-from app.inference import get_vitonHD_runtime
+from app.inference import InferenceManager
 from app.inference.base_inference import BaseInference
 from utils_stableviton import get_batch
 from enum import Enum
@@ -32,7 +32,7 @@ class VitonHDPipeline(Pipeline):
     IMG_H = BaseInference.IMG_H
     IMG_W = BaseInference.IMG_W
     def __init__(self):
-        super().__init__()
+        super().__init__("viton")
         self.__storage_manager: StorageManager = get_storage_manager()
         self.__logger = logging.getLogger(__name__)
         self.__upload_image_service = get_upload_image_service(self.session, self.__storage_manager, None) #message service is not needed.. need to refactor this
@@ -103,7 +103,7 @@ class VitonHDPipeline(Pipeline):
             self.IMG_W
         )
 
-        vitonHD_runtime = get_vitonHD_runtime()
+        vitonHD_runtime = InferenceManager.get_vitonHD_runtime()
 
         result = vitonHD_runtime.infer(batch, 20)
         results_bytes = self.__get_bytes_from_image(result)

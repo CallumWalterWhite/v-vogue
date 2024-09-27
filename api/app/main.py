@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 import logging
-import time
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from app.core.messaging.deps import get_message_flusher
@@ -10,10 +9,10 @@ from app.api import api_router
 from app.core.middleware.message_flush import MessageFlushMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.upgrade import UpgradeManager
-from app.core.deps import get_session 
-import sys
+from app.core.deps import get_session
 import os
 from logging.handlers import RotatingFileHandler
+from app.inference import InferenceManager
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
@@ -36,27 +35,9 @@ async def lifespan(app: FastAPI):
     scheduler = BackgroundScheduler()
     scheduler.add_job(flush_non_sent_messages, 'interval', seconds=10)
     scheduler.start()
-    global vititonhd_model, device
-    #TODO: just rewrite this... it's just bad lol
-    import torch
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    if settings.LOAD_VITONHD_MODEL:
-        from app.inference import setup_vitonHD
-        setup_vitonHD(device)
-    if settings.LOAD_CLOTH_SEGMENTATION_MODEL == True:
-        # Load U2NET model
-        from app.inference import setup_cloth_seg
-        setup_cloth_seg()
-    if settings.LOAD_OPEN_POSE_MODEL == True:
-        from app.inference import setup_open_pose
-        setup_open_pose()
-    if settings.LOAD_HUMAN_PARSING_MODEL == True:
-        from app.inference import setup_human_parsing
-        setup_human_parsing()
-    if settings.LOAD_DENPOSE_MODEL == True:
-        from app.inference import setup_densepose
-        setup_densepose()
 
+    InferenceManager.setup_all_inference_models(settings)
+    
     yield
     
     scheduler.shutdown()
