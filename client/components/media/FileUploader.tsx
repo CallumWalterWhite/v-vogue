@@ -139,7 +139,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ uploadService, requiresPost
         )}
       </TouchableOpacity>
 
-      {file && !uploading && (
+      {file && !uploading  && !postProcessing && (
         <TouchableOpacity style={styles.uploadButton} onPress={uploadFile}>
           <Text style={styles.buttonText}>⬆️ Upload</Text>
         </TouchableOpacity>
@@ -225,6 +225,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
+  text: {
+    color: '#fff',
+  }
 });
 
 export default FileUploader;

@@ -40,14 +40,18 @@ class UploadImageService:
 
     def create_image(self, file_path: str, content: bytes, correlation_id:uuid.UUID, image_type: str) -> uuid.UUID:
         new_image_id = uuid.uuid4()
+        
         file_extension = file_path.split(".")[-1] #grr i know this is not a good way
         new_file_name = f"{new_image_id}.{file_extension}"
+        
         self.storage_manager.create_file(new_file_name, content)
         file_upload = FileUpload(id=new_image_id, filename=str(new_image_id), fullpath=new_file_name, fileextension=file_extension, image_type=image_type)
         self.session.add(file_upload)
+        
         file_upload_message = {"file_id": str(new_image_id), "type": image_type}
         outbound_message = OutboundMessage(content=json.dumps(file_upload_message), message_type=MessageTypes.UPLOAD_MESSAGE, correlation_id=correlation_id)
         self.message_service.create_message(outbound_message)
+        
         return new_image_id
     
     def create_image_preprocess(self, orginal_file_upload_id: uuid, name: str, content: bytes, file_extension:str, type: str) -> uuid.UUID:

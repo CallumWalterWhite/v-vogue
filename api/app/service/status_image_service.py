@@ -99,20 +99,27 @@ class StatusImageService:
             file_upload_pipeline: FileUploadPipeline = self.session.exec(file_upload_pipeline_statement).one_or_none()
             if file_upload_pipeline is None:
                 return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="File not found")
+            pipeline_id = file_upload_pipeline.pipeline_id
+            
         elif file_type == "viton":
             viton_upload_pipeline_statement = select(VitonUploadPipeline).where(VitonUploadPipeline.viton_upload_id == image_id)
             viton_upload_pipeline: VitonUploadPipeline = self.session.exec(viton_upload_pipeline_statement).one_or_none()
             if viton_upload_pipeline is None:
                 return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="Viton not found")
             pipeline_id = viton_upload_pipeline.pipeline_id
+            
         if pipeline_id is None:
             raise ValueError("Pipeline id is None")
+        
         pipeline_state_statement = select(PipelineState).where(PipelineState.pipeline_id == pipeline_id)
         pipeline_state: PipelineState = self.session.exec(pipeline_state_statement).one_or_none()
+        
         if pipeline_state is None:
             return ImageStautsDto(file_id=file_id, has_completed=False, has_error=True, error_message="Pipeline not found")
+        
         progression_calculation: StatusProgressionCalculation = StatusProgressionCalculationFactory.create_calculation(pipeline_state.pipeline_type)
         progression: int = progression_calculation.calculate_progression(pipeline_state.state)
+        
         return ImageStautsDto(
             file_id=file_id, 
             has_completed=pipeline_state.has_completed, 

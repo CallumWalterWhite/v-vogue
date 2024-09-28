@@ -17,7 +17,7 @@ from enum import Enum
 from PIL import Image
 import json
 
-class ModelPipelineProcess(Enum):
+class ModelPipelineProcess(int, Enum):
     INITIAL_IMAGE = 0
     AGNOSTIC_MASK = 1
     OPENPOSE = 2
