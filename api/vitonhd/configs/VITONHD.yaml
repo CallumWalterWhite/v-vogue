@@ -24,8 +24,8 @@ model:
     use_pbe_weight: True
     u_cond_percent: 0.2
     use_attn_mask: False
-    mask1_key: "agn_mask"
-    mask2_key: "cloth_mask"
+    mask1_key: "gt_cloth_warped_mask"
+    mask2_key: "agn_mask"
 
     control_stage_config:
       target: vitonhd.cldm.warping_cldm_network.NoZeroConvControlNet
@@ -93,7 +93,7 @@ model:
     cond_stage_config:
       target: vitonhd.ldm.modules.image_encoders.modules.FrozenCLIPImageEmbedder
 dataset_name: VITONHDDataset
-resume_path: ./ckpts/VITONHD_1024.ckpt
+resume_path: ./ckpts/VITONHD_PBE_pose.ckpt
 default_prompt: ""
 log_images_kwargs:
   unconditional_guidance_scale: 5.0

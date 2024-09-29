@@ -1,31 +1,12 @@
-// HomeScreen.tsx
-
 import React from 'react';
 import { Image, StyleSheet } from 'react-native';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { GetModelService } from '@/services/models/GetModelService';
-import { GetGarmentService } from '@/services/models/GetGarmentService';
-import { VTryOnSubmitService } from '@/services/vtryon/VTryOnSubmitService';
-import DualFileSelector from '@/components/media/DuelFileSelector';
+import { GetVTryOnService } from '@/services/models/GetVTryOnService';
+import FileList from '@/components/media/FileList';
 
-export default function TryOnScreen() {
-  const modelUploadService = new GetModelService();
-  const garmentUploadService = new GetGarmentService();
-  const vTryOnSubmitService = new VTryOnSubmitService();
-
-  const handleSubmission = (selectedModel1: string | null, selectedModel2: string | null) => {
-    if (selectedModel1 && selectedModel2) {
-      vTryOnSubmitService
-        .createSubmission({
-            model_upload_id: selectedModel1,
-            cloth_upload_id: selectedModel2,
-        })
-        .then((response) => {
-          console.log(response);
-        });
-    }
-  };
+export default function ResultsScreen() {
+  const vTrService = new GetVTryOnService();
 
   return (
     <ParallaxScrollView
@@ -37,7 +18,7 @@ export default function TryOnScreen() {
         />
       }
     >
-        <DualFileSelector model1Service={modelUploadService} model2Service={garmentUploadService} onSubmit={handleSubmission} />
+        <FileList modelService={vTrService} />
     </ParallaxScrollView>
   );
 }

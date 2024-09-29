@@ -36,7 +36,7 @@ class VitonHDPipeline(Pipeline):
         self.__storage_manager: StorageManager = get_storage_manager()
         self.__logger = logging.getLogger(__name__)
         self.__upload_image_service = get_upload_image_service(self.session, self.__storage_manager, None) #message service is not needed.. need to refactor this
-        self.__viton_image_service = get_viton_image_service(self.session, None)
+        self.__viton_image_service = get_viton_image_service(self.session, None, self.__storage_manager)
 
     def process_graph(self):
         return {
@@ -105,7 +105,7 @@ class VitonHDPipeline(Pipeline):
 
         vitonHD_runtime = InferenceManager.get_vitonHD_runtime()
 
-        result = vitonHD_runtime.infer(batch, 20)
+        result = vitonHD_runtime.infer(batch, 50)
         results_bytes = self.__get_bytes_from_image(result)
         self.__storage_manager.create_file(f'{id}.{self.OUTPUT_FILE_EXTENSION}', results_bytes)
         self.__viton_image_service.update_viton_image(uuid.UUID(id), f'{id}.{self.OUTPUT_FILE_EXTENSION}', True)

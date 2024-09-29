@@ -1,19 +1,13 @@
-// HomeScreen.tsx
-
 import React, { useState } from 'react';
-import { Image, StyleSheet, Platform, TouchableOpacity, Text, View } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import FileUploader from '@/components/media/FileUploader';
 import { ModelUploadService } from '@/services/media/ModelUploadService';
 import { UploadStatusService } from '@/services/media/UploadStatusService';
 import { GarmentUploadService } from '@/services/media/GarmentUploadService';
 
-export default function HomeScreen() {
-  const [currentService, setCurrentService] = useState<'axios' | 'fetch'>('axios');
+export default function UploadScreen() {
   const modelUploadService = new ModelUploadService();
   const garmentUploadService = new GarmentUploadService();
   const uploadStatusService = new UploadStatusService();

@@ -29,6 +29,13 @@ async def viton_status(
 ):
     return status_image_service.get_image_status(image_id)
 
+@router.get("/outputs")
+async def viton_outputs(
+    viton_image_service: Annotated[VitonImageService, Depends(get_viton_image_service)],
+    is_completed: bool = False
+):
+    return viton_image_service.get_all_viton_images(is_completed)
+
 @router.get("/{image_id}/show")
 async def viton_show(
     image_id: uuid.UUID,

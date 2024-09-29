@@ -24,18 +24,27 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="upload"
         options={{
-          title: 'Explore',
+          title: 'Upload',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon name={focused ? 'cloud-upload' : 'cloud-upload-outline'} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="upload"
+        name="tryon"
         options={{
-          title: 'Upload',
+          title: 'Try On',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'cloud-upload' : 'cloud-upload-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="results"
+        options={{
+          title: 'Try On Results',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'cloud-upload' : 'cloud-upload-outline'} color={color} />
           ),

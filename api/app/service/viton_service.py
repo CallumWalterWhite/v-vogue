@@ -13,6 +13,15 @@ import uuid
 def get_viton_image_service(session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)], storage_manager: Annotated[StorageManager, Depends(get_storage_manager)]):
     return VitonImageService(session, message_service, storage_manager)
 
+class VitonUploadImageDto():
+    def __init__(self, 
+                 filename: str, 
+                 upload_id: uuid.UUID,
+                 file_path: str):
+        self.filename = filename
+        self.upload_id = upload_id
+        self.file_path = file_path
+
 class VitonImageService:
     def __init__(self, session:SessionDep, message_service: Annotated[MessageService, Depends(get_message_service)], storage_manager: Annotated[StorageManager, Depends(get_storage_manager)]):
         self.session = session
@@ -34,7 +43,7 @@ class VitonImageService:
         self.message_service.create_message(outbound_message)
         self.session.add(viton_image)
         self.session.commit()
-        return viton_image
+        return viton_image_id
     
     def update_viton_image(self, id: uuid.UUID, path: str, is_completed: bool) -> VitonUploadImage:
         viton_image = self.get_viton_image(id)
@@ -42,6 +51,11 @@ class VitonImageService:
         viton_image.is_completed = is_completed
         self.session.commit()
         return viton_image
+    
+    def get_all_viton_images(self, is_completed=False) -> list[VitonUploadImageDto]:
+        viton_image_statement = select(VitonUploadImage)
+        viton_images: list[VitonUploadImage] = self.session.exec(viton_image_statement).all()
+        return [VitonUploadImageDto(viton_image.catergory, viton_image.id, viton_image.path) for viton_image in viton_images]
     
     def get_image_bytes(self, id: uuid.UUID) -> bytes:
         viton_image = self.get_viton_image(id)
