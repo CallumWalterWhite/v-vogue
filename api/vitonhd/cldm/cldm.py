@@ -16,8 +16,9 @@ from torchvision.utils import make_grid
 from vitonhd.ldm.models.diffusion.ddpm import LatentDiffusion
 from vitonhd.ldm.util import log_txt_as_img, instantiate_from_config
 from vitonhd.ldm.models.diffusion.ddim import DDIMSampler
+from huggingface_hub import PyTorchModelHubMixin
 
-class ControlLDM(LatentDiffusion):
+class ControlLDM(LatentDiffusion, PyTorchModelHubMixin):
     def __init__(
             self, 
             control_stage_config, 
