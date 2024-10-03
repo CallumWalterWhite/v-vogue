@@ -25,8 +25,8 @@ class VitonInferenceEndpointHandler():
     def __init__(self, path=""):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         config = OmegaConf.load("./configs/VITONHD.yaml")
-        config.model.params.img_H = self.IMG_H
-        config.model.params.img_W = self.IMG_W
+        config.model.params.img_H = 512
+        config.model.params.img_W = 384
         self.params = config.model.params
         model: ControlLDM = create_model(config_path=None, config=config)
         load_cp = torch.load(path, map_location=device)
