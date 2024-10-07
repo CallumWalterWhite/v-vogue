@@ -10,6 +10,6 @@ class MessageTypes():
 
     VITON_SUBMIT_MESSAGE = 'viton_submit_message'
     
-    VITON_PIPELINE_MESSAGE = 'model_pipeline_message'
-    VITON_COMPLETE_MESSAGE = 'model_complete_message'
-    VITON_ERROR_MESSAGE = 'model_error_message'
+    VITON_PIPELINE_MESSAGE = 'viton_pipeline_message'
+    VITON_COMPLETE_MESSAGE = 'viton_complete_message'
+    VITON_ERROR_MESSAGE = 'viton_error_message'
