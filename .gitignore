@@ -225,4 +225,3 @@ database.sqlite
 .shopify/*
 .shopify.lock
 
-app/
