@@ -81,6 +81,14 @@ class Settings(BaseSettings):
     VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD.ckpt"
     CLOTH_SEGMENTATION_MODEL_PATH: str = "../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth"
     
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_REDIRECT_URI: str = ""
+    
+    FACEBOOK_APP_ID: str = ""
+    FACEBOOK_APP_SECRET: str = ""
+    FACEBOOK_REDIRECT_URI: str = ""
+    
     STORAGE_SETTING: Literal["local", "azure"] = "local"
     
     IS_LOCAL_MESSAGING: bool = True

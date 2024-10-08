@@ -34,3 +34,4 @@ fvcore
 cloudpickle==3.0.0
 pycocotools==2.0.8
 av==13.0.0
+fastapi-sso==0.15.0
