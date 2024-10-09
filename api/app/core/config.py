@@ -81,6 +81,8 @@ class Settings(BaseSettings):
     VITONHD_MODEL_PATH: str = "../vitonhd/VITONHD.ckpt"
     CLOTH_SEGMENTATION_MODEL_PATH: str = "../cloth_segmentation/trained_checkpoint/checkpoint_u2net.pth"
     
+    DISABLE_AUTH: bool = False
+    
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = ""

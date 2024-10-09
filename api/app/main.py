@@ -7,6 +7,7 @@ from app.core.config import settings
 from starlette.middleware.cors import CORSMiddleware
 from app.api import api_router
 from app.core.middleware.message_flush import MessageFlushMiddleware
+from app.core.middleware.auth_middleware import AuthMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.upgrade import UpgradeManager
 from app.core.deps import get_session
@@ -75,6 +76,6 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+app.add_middleware(AuthMiddleware)
 app.add_middleware(MessageFlushMiddleware)
-##TODO: add sqlmodel flusher middleware (flushes all sqlmodel sessions)
 app.include_router(api_router, prefix=settings.API_V1_STR)

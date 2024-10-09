@@ -35,3 +35,7 @@ cloudpickle==3.0.0
 pycocotools==2.0.8
 av==13.0.0
 fastapi-sso==0.15.0
+python-multipart==0.0.12
+beautifulsoup4==4.12.3
+requests==2.32.3
+selenium==4.25.0
